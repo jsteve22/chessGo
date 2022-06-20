@@ -4,11 +4,15 @@ import (
 	"fmt"
 )
 
+type Move struct {
+	start int8
+	end int8
+}
+
 type Piece struct {
 	alive bool
-	pos uint8
-	piece int 	// 0: king; 1: pawn; 2: knight; 3: bishop; 4: rook; 5: queen 
-	moves []uint8
+	pos int8
+	piece int 	// king=0; pawn=1; knight=2; bishop=3; rook=4; queen=5 
 	color uint8
 	rep byte
 }
@@ -18,9 +22,14 @@ type ChessBoard struct {
 	white [16]Piece
 	black [16]Piece
 
-	nextmove uint
+	moves []Move
+
+	nextmove int
 	turn uint
 	revcnt uint
+
+	castle [4]bool	// KQkq
+	enpas int8
 }
 
 func Aboard() {
@@ -35,11 +44,76 @@ func InitBoard() ChessBoard {
 
 	newCB.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
 
+	newCB.castle[0] = true
+	newCB.castle[1] = true
+	newCB.castle[2] = true
+	newCB.castle[3] = true
+
 	newCB.nextmove = 0
 	newCB.turn = 1
 	newCB.revcnt = 0
 
 	return newCB
+}
+
+func (cb *ChessBoard) UpdateNextMove() {
+	cb.nextmove = cb.nextmove ^ 1
+}
+
+func (cb *ChessBoard) MakeMove(move string) {
+	// this function will make a move on the board 
+	sf := (int8)(move[0] - 'A')
+	sr := (int8)(move[1] - '1')
+
+	ef := (int8)(move[2] - 'A')
+	er := (int8)(move[3] - '1')
+
+	st := sf + (sr << 3)
+	en := ef + (er << 3)
+
+	if cb.board[en] != nil {
+		cb.board[en].alive = false
+	}
+
+	cb.board[en] = cb.board[st]
+	cb.board[st] = nil
+	cb.board[en].pos = en
+}
+
+func (cb *ChessBoard) GenMoves() {
+	cb.moves = make([]Move, 0)
+
+	var pieces *[16]Piece
+	//var forward int8
+
+	if ( cb.nextmove == 0 ) {
+		pieces = &cb.white
+		//forward = 8
+	} else {
+		pieces = &cb.black
+		//forward = -8
+	}
+
+	for _, p := range pieces {
+		if !p.alive {
+			continue
+		}
+		if p.piece == 0 {
+			kingMove( cb, p )
+		} else if p.piece == 1 {
+			pawnMove( cb, p )
+			//cb.moves = append(cb.moves, Move{p.pos,p.pos+(uint8)(forward)})
+		} else if p.piece == 2 {
+			knightMove( cb, p )
+		} else if p.piece == 3 {
+			bishopMove( cb, p )
+		} else if p.piece == 4 {
+			rookMove( cb, p )
+		} else if p.piece == 5 {
+			bishopMove( cb, p )
+			rookMove( cb, p )
+		}
+	}
 }
 
 func (cb *ChessBoard) FENSet(str string) {
@@ -93,7 +167,7 @@ func (cb *ChessBoard) FENSet(str string) {
 			}
 
 			cb.board[pos] = addP
-			addP.pos = (uint8)(pos)
+			addP.pos = (int8)(pos)
 			file++
 		} else {
 			// increment the file by the numeric value in string
@@ -162,3 +236,58 @@ func (b *ChessBoard) PrintBoard() {
 func printHorizontalLine() {
 	fmt.Printf("---------------------------------\n")
 }
+
+func (cb *ChessBoard) PrintMoves() {
+	for _,m := range cb.moves {
+		sFile := m.start & 7
+		sRank := (m.start &  56) >> 3
+		eFile := m.end & 7
+		eRank := (m.end &  56) >> 3
+
+		fmt.Printf("[%v] (%v,%v) -> (%v,%v)\n",(string)(cb.board[m.start].rep),sFile,sRank,eFile,eRank)
+	}
+}
+
+/*
+func pawnMove(cb *ChessBoard, p Piece ) {
+	var forward int8
+	var unMoved bool
+	if p.color == 0 {
+		forward = 8
+		unMoved = (p.pos >> 3) == 1
+	} else {
+		forward = -8
+		unMoved = (p.pos >> 3) == 6
+	}
+
+	// if nothing is in front of pawn, add move forward once
+	// if unmoved check if can push twice
+	up := p.pos+forward
+	if cb.board[up] == nil {	
+		cb.moves = append(cb.moves, Move{p.pos,up})
+		if unMoved {
+			if cb.board[p.pos+(2*forward)] == nil {
+				cb.moves = append(cb.moves, Move{p.pos,p.pos+(2*forward)})
+			}
+		}
+	}
+
+	// if not on left side, check if can take piece to the left
+	if (p.pos & 7) != 0 {
+		if cb.board[p.pos + forward - 1] != nil {
+			if cb.board[p.pos + forward - 1].color != p.color {
+				cb.moves = append(cb.moves, Move{p.pos,p.pos + forward - 1}) 
+			}
+		}
+	}
+
+	// if not on right side, check if can take piece to the right
+	if (p.pos & 7) != 7 {
+		if cb.board[p.pos + forward + 1] != nil {
+			if cb.board[p.pos + forward + 1].color != p.color {
+				cb.moves = append(cb.moves, Move{p.pos,p.pos + forward + 1}) 
+			}
+		}
+	}
+}
+*/
