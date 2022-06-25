@@ -14,13 +14,15 @@ func main() {
 
 	b.InitBoard()
 
-	/*
-	n := 4
+	b.FENSet("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8")
+	// b.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3K2R")
+	
+	n := 2
 	x := b.Perft(n)
 
 	fmt.Printf("Perft(%v): %v\n",n,x)
 	return
-	*/
+	
 
 	// b.FENSet("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQK2R")
 	// b.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")

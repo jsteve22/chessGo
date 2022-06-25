@@ -1,555 +1,257 @@
 package board
 
-func pawnMove(cb *ChessBoard, p Piece) {
-	// this function will calculate all of the moves a pawn
-	// can make on the board. Any possible moves will be appended
-	// to ChessBoard.moves array
-	var forward int8
-	var unMoved bool
-	var nMove Move
+func (cb *ChessBoard) makeMove(move Move) {
+	// this function will make a move and update prevMove
+	st := move.start
+	en := move.end
 
-	// determine which direction to move a pawn, up for white/down for black
-	// also determine if current pawn has moved previously by determining
-	// if it is still on it's starting rank. 1 for white and 6 for black
-	if p.color == 0 {
-		forward = 8
-		unMoved = (p.pos >> 3) == 1
-	} else {
-		forward = -8
-		unMoved = (p.pos >> 3) == 6
+	// create appendMove which will be added to end of prevMove slice
+	var appendMove Move
+	appendMove.start = st
+	appendMove.end = en
+	appendMove.pieceMoved = cb.board[st]
+	appendMove.color = cb.nextmove
+
+	if cb.board[en] != nil {
+		cb.board[en].alive = false
+		appendMove.pieceCaptured = cb.board[en]
+		appendMove.capPos = en
 	}
 
-	posMoves := make([]Move, 0)
-	cb.inCheck()
+	// this is the naive movement, for simple movement
+	cb.board[en] = cb.board[st]
+	cb.board[st] = nil
+	cb.board[en].pos = en
 
-	// if nothing is in front of pawn, add move forward once
-	// if unmoved check if can push twice
-	up := p.pos + forward
-	if cb.board[up] == nil {
-		// make move and check if king is still in check
-		//cb.moves = append(cb.moves, Move{p.pos, up})
-		nMove.start = p.pos
-		nMove.end = up
-		posMoves = append(posMoves, nMove)
-		if unMoved {
-			if cb.board[p.pos+(2*forward)] == nil {
-				//cb.moves = append(cb.moves, Move{p.pos, p.pos + (2 * forward)})
-				nMove.start = p.pos
-				nMove.end = p.pos + (2 * forward)
-				posMoves = append(posMoves, nMove)
-			}
-		}
-	}
+	// check if move was enpassant take
+	enpasMove := (cb.board[en].piece == 1 && en == cb.enpas)
 
-	// if not on left side, check if can take piece to the left
-	if (p.pos & 7) != 0 {
-		if cb.board[p.pos+forward-1] != nil {
-			if cb.board[p.pos+forward-1].color != p.color {
-				//cb.moves = append(cb.moves, Move{p.pos, p.pos + forward - 1})
-				nMove.start = p.pos
-				nMove.end = p.pos + forward - 1
-				posMoves = append(posMoves, nMove)
-			}
-		}
-		if cb.enpas == p.pos+forward-1 {
-			//cb.moves = append(cb.moves, Move{p.pos, p.pos + forward - 1})
-			nMove.start = p.pos
-			nMove.end = p.pos + forward - 1
-			posMoves = append(posMoves, nMove)
-		}
-	}
+	cb.enpas = -1
 
-	// if not on right side, check if can take piece to the right
-	if (p.pos & 7) != 7 {
-		if cb.board[p.pos+forward+1] != nil {
-			if cb.board[p.pos+forward+1].color != p.color {
-				//cb.moves = append(cb.moves, Move{p.pos, p.pos + forward + 1})
-				nMove.start = p.pos
-				nMove.end = p.pos + forward + 1
-				posMoves = append(posMoves, nMove)
-			}
-		}
-		if cb.enpas == p.pos+forward+1 {
-			//cb.moves = append(cb.moves, Move{p.pos, p.pos + forward + 1})
-			nMove.start = p.pos
-			nMove.end = p.pos + forward + 1
-			posMoves = append(posMoves, nMove)
+	// check if move was a castle
+	// check if piece moved was a king
+	if cb.board[en].piece == 0 {
+		stRank := st & 56
+		stFile := st & 7
+		enRank := en & 56
+		enFile := en & 7
+
+		// changed castling permissions
+		cb.castle[2*cb.board[en].color] = false
+		cb.castle[(2*cb.board[en].color)+1] = false
+
+		// check if king is castling and to which side
+		if stRank == enRank && enFile-stFile == 2 {
+			// king is castling king side
+			// move rook to F1/F8
+			appendMove.castle = (2 * cb.board[en].color) + 1
+			// appendMove.pieceCaptured = cb.board[en+1]
+			// appendMove.capPos = (stRank << 3) + 7
+			cb.board[st+1] = cb.board[en+1]
+			cb.board[st+1].pos = st + 1
+			cb.board[en+1] = nil
+		} else if stRank == enRank && stFile-enFile == 2 {
+			// king is castling queen side
+			// move rook to D1/D8
+			appendMove.castle = (2 * cb.board[en].color) + 2
+			// appendMove.pieceCaptured = cb.board[stRank << 3]
+			// appendMove.capPos = stRank << 3
+			cb.board[st-1] = cb.board[stRank]
+			cb.board[st-1].pos = st - 1
+			cb.board[stRank] = nil
 		}
 	}
 
-	// go through posMoves and check if any of the moves would stop
-	// check and add those to cb.moves
-	// only check if it will prevent check if king already in check
-	if cb.check || true {
-		var resetEnpas int8
-		for _, m := range posMoves {
-			resetEnpas = cb.enpas
-			cb.makeMove(m)
-			cb.inCheck()
-			if !cb.check {
-				cb.moves = append(cb.moves, m)
-			}
-			cb.enpas = resetEnpas
-			cb.undoMove(m)
-			cb.inCheck()
-		}
-	} else {
-		cb.moves = append(cb.moves, posMoves...)
+	// check if piece moved was a rook
+	if cb.board[en].piece == 4 {
+		// changed castling permissions
+		cb.castle[2*cb.board[en].color] = false
+		cb.castle[(2*cb.board[en].color)+1] = false
 	}
+
+	// check if piece moved was a pawn
+	if cb.board[en].piece == 1 {
+		stRank := (st & 56) >> 3
+		// stFile := st & 7
+		enRank := (en & 56) >> 3
+		enFile := en & 7
+
+		// check if the move was a double push
+		if enRank-stRank == 2 || stRank-enRank == 2 {
+			cb.enpas = st + (4 * (enRank - stRank))
+			// cb.enpas = -1
+		}
+
+		// check if move was an enpas take
+		if enpasMove {
+			enpasPawnPos := (stRank << 3) + enFile
+			/*
+				fmt.Printf("ENPAS MADNESS (%v%v)\n",(string)('A'+enFile),stRank+1)
+				cb.PrintBoard()
+				cb.PrintPieces()
+				fmt.Printf("\n\n")
+			*/
+			// fmt.Printf("%v", enpasPawnPos )
+			appendMove.pieceCaptured = cb.board[enpasPawnPos]
+			appendMove.capPos = enpasPawnPos
+			cb.board[enpasPawnPos].alive = false
+			cb.board[enpasPawnPos] = nil
+			// cb.enpas = -1
+		}
+	}
+
+	// add new move to slice
+	cb.prevMoves = append(cb.prevMoves, appendMove)
 }
 
-func knightMove(cb *ChessBoard, p Piece) {
+func (cb *ChessBoard) undoMove(move Move) {
+	// undo a given move on the board. This will
+	// only undo the previous move that was on the
+	// board. If provided a different move than the
+	// immediate previous one, then could cause issues
 
-	vlong := make([]int8, 0)
-	vshort := make([]int8, 0)
-	hlong := make([]int8, 0)
-	hshort := make([]int8, 0)
+	var pieces *[16]Piece
+	lastMove := cb.prevMoves[len(cb.prevMoves)-1]
 
-	file := p.pos & 7
-	rank := (p.pos & 56) >> 3
-	var nMove Move
-
-	if file < 6 {
-		hlong = append(hlong, 2)
-	}
-	if file < 7 {
-		hshort = append(hshort, 1)
-	}
-	if file > 1 {
-		hlong = append(hlong, -2)
-	}
-	if file > 0 {
-		hshort = append(hshort, -1)
-	}
-
-	if rank < 6 {
-		vlong = append(vlong, 16)
-	}
-	if rank < 7 {
-		vshort = append(vshort, 8)
-	}
-	if rank > 1 {
-		vlong = append(vlong, -16)
-	}
-	if rank > 0 {
-		vshort = append(vshort, -8)
-	}
-
-	posMoves := make([]Move, 0)
-	cb.inCheck()
-
-	for _, i := range hlong {
-		// check with long going horizontal and short going vertical
-		for _, j := range vshort {
-			if cb.board[p.pos+i+j] == nil {
-				nMove.start = p.pos
-				nMove.end = p.pos + i + j
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, p.pos + i + j})
-			} else if cb.board[p.pos+i+j].color != p.color {
-				nMove.start = p.pos
-				nMove.end = p.pos + i + j
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, p.pos + i + j})
-			}
-		}
-	}
-
-	for _, i := range vlong {
-		// check with long going vertical and short going horizontal
-		for _, j := range hshort {
-			if cb.board[p.pos+i+j] == nil {
-				nMove.start = p.pos
-				nMove.end = p.pos + i + j
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, p.pos + i + j})
-			} else if cb.board[p.pos+i+j].color != p.color {
-				nMove.start = p.pos
-				nMove.end = p.pos + i + j
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, p.pos + i + j})
-			}
-		}
-	}
-
-	// go through posMoves and check if any of the moves would stop
-	// check and add those to cb.moves
-	// only check if it will prevent check if king already in check
-	if cb.check || true {
-		var resetEnpas int8
-		for _, m := range posMoves {
-			resetEnpas = cb.enpas
-			cb.makeMove(m)
-			cb.inCheck()
-			if !cb.check {
-				cb.moves = append(cb.moves, m)
-			}
-			cb.enpas = resetEnpas
-			cb.undoMove(m)
-			cb.inCheck()
-		}
+	if cb.nextmove == 0 {
+		pieces = &cb.black
 	} else {
-		cb.moves = append(cb.moves, posMoves...)
+		pieces = &cb.white
+		// pieces = &cb.black
 	}
+
+	st := move.start
+	en := move.end
+
+	// reset piece on board to previous position
+	cb.board[move.start] = cb.board[move.end]
+	cb.board[move.start].pos = move.start
+	cb.board[move.end] = nil
+
+	// loop through other side's pieces and bring
+	// back a piece if it was taken on previous turn
+	for i, p := range pieces {
+		if p.pos == lastMove.capPos {
+			// p.alive = true
+			// cb.board[move.end] = &p
+			pieces[i].alive = true
+			// cb.board[lastMove.capPos] = lastMove.pieceCaptured
+			cb.board[lastMove.capPos] = &pieces[i]
+			cb.prevMoves[len(cb.prevMoves)-1] = Move{}
+			cb.prevMoves = cb.prevMoves[:len(cb.prevMoves)-1]
+			return
+		}
+	}
+
+	// check if move was a castle
+	// check if piece moved was a king
+	if cb.board[st].piece == 0 {
+		stRank := (st & 56)
+		stFile := st & 7
+		enRank := (en & 56)
+		enFile := en & 7
+
+		// check if last move was a castle move
+		if lastMove.castle != 0 {
+			if lastMove.castle < 3 { // white castle
+				cb.castle[0] = true
+				cb.castle[1] = true
+			} else { // black castle
+				cb.castle[2] = true
+				cb.castle[3] = true
+			}
+		}
+
+		// check if king is castling and to which side
+		// if stRank == enRank && enFile - stFile == 2 {
+		if lastMove.castle == 1 || lastMove.castle == 3 {
+			// king is castling king side
+			// move rook to F1/F8
+			// lastMove.pieceCaptured.pos = lastMove.capPos
+			// cb.board[ ( stRank << 3) + 7 ] = lastMove.pieceCaptured
+			// cb.board[ ( stRank << 3) + 5 ] = nil
+			cb.board[en+1] = cb.board[st+1]
+			cb.board[en+1].pos = en + 1
+			cb.board[st+1] = nil
+		} else if stRank == enRank && stFile-enFile == 2 {
+			// king is castling queen side
+			// move rook to D1/D8
+			// lastMove.pieceCaptured.pos = lastMove.capPos
+			// cb.board[ stRank << 3] = lastMove.pieceCaptured
+			// cb.board[ ( stRank << 3) + 4 ] = nil
+			cb.board[stRank] = cb.board[st-1]
+			cb.board[stRank].pos = stRank
+			cb.board[st-1] = nil
+		}
+	}
+
+	// check if piece moved was a pawn
+	if cb.board[st].piece == 1 {
+		stRank := (st & 56) >> 3
+		// stFile := st & 7
+		// enRank := ( en & 56 ) >> 3
+		enFile := en & 7
+
+		// check if move was an enpas take
+		if en == cb.enpas {
+			// find which piece was captured and bring back to life
+			enpasPawnPos := (stRank << 3) + enFile
+			for i, p := range pieces {
+				if p.pos == (enpasPawnPos) {
+					pieces[i].alive = true
+					cb.board[enpasPawnPos] = &pieces[i]
+					/*
+						fmt.Printf("ENPAS UNDO (%v%v)\n",(string)('A'+enFile),stRank+1)
+						cb.PrintBoard()
+						cb.PrintPieces()
+						fmt.Printf("\n\n")
+					*/
+				}
+			}
+		}
+	}
+
+	// delete last element of prevMoves
+	cb.prevMoves[len(cb.prevMoves)-1] = Move{}
+	cb.prevMoves = cb.prevMoves[:len(cb.prevMoves)-1]
 }
 
-func bishopMove(cb *ChessBoard, p Piece) {
-	var rank int8
-	var file int8
-	var pos int8
-	var nMove Move
+func (cb *ChessBoard) GenMoves() {
 
-	file = p.pos & 7
-	rank = (p.pos & 56) >> 3
-
-	posMoves := make([]Move, 0)
 	cb.inCheck()
 
-	// check top right
-	for {
-		file++
-		rank++
-		if rank == 8 || file == 8 {
-			break
-		}
-		pos = (rank << 3) + file
-		// hit a piece
-		if cb.board[pos] != nil {
-			// other side's piece
-			if cb.board[pos].color != p.color {
-				nMove.start = p.pos
-				nMove.end = pos
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, pos})
-			}
-			break
-		}
-		nMove.start = p.pos
-		nMove.end = pos
-		posMoves = append(posMoves, nMove)
-		//cb.moves = append(cb.moves, Move{p.pos, pos})
-	}
+	cb.moves = make([]Move, 0)
 
-	file = p.pos & 7
-	rank = (p.pos & 56) >> 3
-	// check top left
-	for {
-		file--
-		rank++
-		if rank == 8 || file == -1 {
-			break
-		}
-		pos = (rank << 3) + file
-		// hit a piece
-		if cb.board[pos] != nil {
-			// other side's piece
-			if cb.board[pos].color != p.color {
-				nMove.start = p.pos
-				nMove.end = pos
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, pos})
-			}
-			break
-		}
-		nMove.start = p.pos
-		nMove.end = pos
-		posMoves = append(posMoves, nMove)
-		//cb.moves = append(cb.moves, Move{p.pos, pos})
-	}
+	var pieces *[16]Piece
+	//var forward int8
 
-	file = p.pos & 7
-	rank = (p.pos & 56) >> 3
-	// check bottom left
-	for {
-		file--
-		rank--
-		if rank == -1 || file == -1 {
-			break
-		}
-		pos = (rank << 3) + file
-		// hit a piece
-		if cb.board[pos] != nil {
-			// other side's piece
-			if cb.board[pos].color != p.color {
-				nMove.start = p.pos
-				nMove.end = pos
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, pos})
-			}
-			break
-		}
-		nMove.start = p.pos
-		nMove.end = pos
-		posMoves = append(posMoves, nMove)
-		//cb.moves = append(cb.moves, Move{p.pos, pos})
-	}
-
-	file = p.pos & 7
-	rank = (p.pos & 56) >> 3
-	// check bottom right
-	for {
-		file++
-		rank--
-		if rank == -1 || file == 8 {
-			break
-		}
-		pos = (rank << 3) + file
-		// hit a piece
-		if cb.board[pos] != nil {
-			// other side's piece
-			if cb.board[pos].color != p.color {
-				nMove.start = p.pos
-				nMove.end = pos
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, pos})
-			}
-			break
-		}
-		nMove.start = p.pos
-		nMove.end = pos
-		posMoves = append(posMoves, nMove)
-		//cb.moves = append(cb.moves, Move{p.pos, pos})
-	}
-
-	// go through posMoves and check if any of the moves would stop
-	// check and add those to cb.moves
-	// only check if it will prevent check if king already in check
-	if cb.check || true {
-		var resetEnpas int8
-		for _, m := range posMoves {
-			resetEnpas = cb.enpas
-			cb.makeMove(m)
-			cb.inCheck()
-			if !cb.check {
-				cb.moves = append(cb.moves, m)
-			}
-			cb.enpas = resetEnpas
-			cb.undoMove(m)
-			cb.inCheck()
-		}
+	if cb.nextmove == 0 {
+		pieces = &cb.white
+		//forward = 8
 	} else {
-		cb.moves = append(cb.moves, posMoves...)
-	}
-}
-
-func rookMove(cb *ChessBoard, p Piece) {
-	var rank int8
-	var file int8
-	var pos int8
-	var nMove Move
-
-	posMoves := make([]Move, 0)
-	cb.inCheck()
-
-	file = p.pos & 7
-	rank = (p.pos & 56) >> 3
-	// check right
-	for {
-		file++
-		if file == 8 {
-			break
-		}
-		pos = (rank << 3) + file
-		// hit a piece
-		if cb.board[pos] != nil {
-			// other side's piece
-			if cb.board[pos].color != p.color {
-				nMove.start = p.pos
-				nMove.end = pos
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, pos})
-			}
-			break
-		}
-		nMove.start = p.pos
-		nMove.end = pos
-		posMoves = append(posMoves, nMove)
-		//cb.moves = append(cb.moves, Move{p.pos, pos})
+		pieces = &cb.black
+		//forward = -8
 	}
 
-	file = p.pos & 7
-	rank = (p.pos & 56) >> 3
-	// check left
-	for {
-		file--
-		if file == -1 {
-			break
+	for _, p := range pieces {
+		if !p.alive {
+			continue
 		}
-		pos = (rank << 3) + file
-		// hit a piece
-		if cb.board[pos] != nil {
-			// other side's piece
-			if cb.board[pos].color != p.color {
-				nMove.start = p.pos
-				nMove.end = pos
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, pos})
-			}
-			break
+		if p.piece == 0 {
+			kingMove(cb, p)
+		} else if p.piece == 1 {
+			pawnMove(cb, p)
+			//cb.moves = append(cb.moves, Move{p.pos,p.pos+(uint8)(forward)})
+		} else if p.piece == 2 {
+			knightMove(cb, p)
+		} else if p.piece == 3 {
+			bishopMove(cb, p)
+		} else if p.piece == 4 {
+			rookMove(cb, p)
+		} else if p.piece == 5 {
+			queenMove(cb, p)
+			// bishopMove(cb, p)
+			// rookMove(cb, p)
 		}
-		nMove.start = p.pos
-		nMove.end = pos
-		posMoves = append(posMoves, nMove)
-		//cb.moves = append(cb.moves, Move{p.pos, pos})
-	}
-
-	file = p.pos & 7
-	rank = (p.pos & 56) >> 3
-	// check up
-	for {
-		rank++
-		if rank == 8 {
-			break
-		}
-		pos = (rank << 3) + file
-		// hit a piece
-		if cb.board[pos] != nil {
-			// other side's piece
-			if cb.board[pos].color != p.color {
-				nMove.start = p.pos
-				nMove.end = pos
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, pos})
-			}
-			break
-		}
-		nMove.start = p.pos
-		nMove.end = pos
-		posMoves = append(posMoves, nMove)
-		//cb.moves = append(cb.moves, Move{p.pos, pos})
-	}
-
-	file = p.pos & 7
-	rank = (p.pos & 56) >> 3
-	// check down
-	for {
-		rank--
-		if rank == -1 {
-			break
-		}
-		pos = (rank << 3) + file
-		// hit a piece
-		if cb.board[pos] != nil {
-			// other side's piece
-			if cb.board[pos].color != p.color {
-				nMove.start = p.pos
-				nMove.end = pos
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, pos})
-			}
-			break
-		}
-		nMove.start = p.pos
-		nMove.end = pos
-		posMoves = append(posMoves, nMove)
-		//cb.moves = append(cb.moves, Move{p.pos, pos})
-	}
-
-	// go through posMoves and check if any of the moves would stop
-	// check and add those to cb.moves
-	// only check if it will prevent check if king already in check
-	if cb.check || true {
-		var resetEnpas int8
-		for _, m := range posMoves {
-			resetEnpas = cb.enpas
-			cb.makeMove(m)
-			cb.inCheck()
-			if !cb.check {
-				cb.moves = append(cb.moves, m)
-			}
-			cb.enpas = resetEnpas
-			cb.undoMove(m)
-			cb.inCheck()
-		}
-	} else {
-		cb.moves = append(cb.moves, posMoves...)
-	}
-}
-
-func kingMove(cb *ChessBoard, p Piece) {
-	var file int8
-	var rank int8
-	var next int8
-	var nMove Move
-
-	posMoves := make([]Move, 0)
-	cb.inCheck()
-
-	file = p.pos & 7
-	rank = (p.pos & 56) >> 3
-
-	horz := make([]int8, 1)
-	vert := make([]int8, 1)
-
-	if rank < 7 {
-		vert = append(vert, 1)
-	}
-	if rank > 0 {
-		vert = append(vert, -1)
-	}
-
-	if file < 7 {
-		horz = append(horz, 1)
-	}
-	if file > 0 {
-		horz = append(horz, -1)
-	}
-
-	// check immediate squares
-	for _, i := range vert {
-		for _, j := range horz {
-			next = p.pos + j + (i << 3)
-
-			if cb.board[next] == nil {
-				nMove.start = p.pos
-				nMove.end = next
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, next})
-			} else if cb.board[next].color != p.color {
-				nMove.start = p.pos
-				nMove.end = next
-				posMoves = append(posMoves, nMove)
-				//cb.moves = append(cb.moves, Move{p.pos, next})
-			}
-		}
-	}
-
-	// check castling rights
-	if cb.castle[2*p.color] && !cb.check {
-		if cb.board[p.pos+1] == nil && cb.board[p.pos+2] == nil {
-			nMove.start = p.pos
-			nMove.end = p.pos + 2
-			posMoves = append(posMoves, nMove)
-			//cb.moves = append(cb.moves, Move{p.pos, p.pos + 2})
-		}
-	}
-
-	if cb.castle[(2*p.color)+1] && !cb.check {
-		if cb.board[p.pos-1] == nil && cb.board[p.pos-2] == nil && cb.board[p.pos-3] == nil {
-			nMove.start = p.pos
-			nMove.end = p.pos - 2
-			posMoves = append(posMoves, nMove)
-			//cb.moves = append(cb.moves, Move{p.pos, p.pos - 2})
-		}
-	}
-
-	// go through posMoves and check if any of the moves would stop
-	// check and add those to cb.moves
-	// only check if it will prevent check if king already in check
-	if cb.check || true {
-		var resetEnpas int8
-		for _, m := range posMoves {
-			resetEnpas = cb.enpas
-			cb.makeMove(m)
-			cb.inCheck()
-			if !cb.check {
-				cb.moves = append(cb.moves, m)
-			}
-			cb.enpas = resetEnpas
-			cb.undoMove(m)
-			cb.inCheck()
-		}
-	} else {
-		cb.moves = append(cb.moves, posMoves...)
 	}
 }
