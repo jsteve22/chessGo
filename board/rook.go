@@ -1,6 +1,6 @@
 package board
 
-func rookMove(cb *ChessBoard, p Piece) {
+func RookMove(cb *ChessBoard, p Piece) {
 	var rank int8
 	var file int8
 	var pos int8
@@ -134,7 +134,7 @@ func rookMove(cb *ChessBoard, p Piece) {
 	}
 }
 
-func rookAttack(cb *ChessBoard, p Piece) {
+func RookAttack(cb *ChessBoard, p Piece) {
 	var rank int8
 	var file int8
 	var pos int8

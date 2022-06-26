@@ -1,6 +1,6 @@
 package board
 
-func kingMove(cb *ChessBoard, p Piece) {
+func KingMove(cb *ChessBoard, p Piece) {
 	var file int8
 	var rank int8
 	var next int8
@@ -88,7 +88,7 @@ func kingMove(cb *ChessBoard, p Piece) {
 	}
 }
 
-func kingAttack(cb *ChessBoard, p Piece) {
+func KingAttack(cb *ChessBoard, p Piece) {
 	var file int8
 	var rank int8
 	var next int8

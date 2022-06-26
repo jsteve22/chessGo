@@ -1,6 +1,6 @@
 package board
 
-func knightMove(cb *ChessBoard, p Piece) {
+func KnightMove(cb *ChessBoard, p Piece) {
 
 	vlong := make([]int8, 0)
 	vshort := make([]int8, 0)
@@ -95,7 +95,7 @@ func knightMove(cb *ChessBoard, p Piece) {
 	}
 }
 
-func knightAttack(cb *ChessBoard, p Piece) {
+func KnightAttack(cb *ChessBoard, p Piece) {
 
 	vlong := make([]int8, 0)
 	vshort := make([]int8, 0)

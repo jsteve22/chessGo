@@ -1,11 +1,12 @@
 package board
 
-func pawnMove(cb *ChessBoard, p Piece) {
+func PawnMove(cb *ChessBoard, p Piece) {
 	// this function will calculate all of the moves a pawn
 	// can make on the board. Any possible moves will be appended
 	// to ChessBoard.moves array
 	var forward int8
 	var unMoved bool
+	var promote bool
 	var nMove Move
 
 	// determine which direction to move a pawn, up for white/down for black
@@ -14,9 +15,11 @@ func pawnMove(cb *ChessBoard, p Piece) {
 	if p.color == 0 {
 		forward = 8
 		unMoved = (p.pos >> 3) == 1
+		promote = (p.pos >> 3) == 6
 	} else {
 		forward = -8
 		unMoved = (p.pos >> 3) == 6
+		promote = (p.pos >> 3) == 1
 	}
 
 	posMoves := make([]Move, 0)
@@ -30,7 +33,14 @@ func pawnMove(cb *ChessBoard, p Piece) {
 		//cb.moves = append(cb.moves, Move{p.pos, up})
 		nMove.start = p.pos
 		nMove.end = up
-		posMoves = append(posMoves, nMove)
+		if promote {
+			for i := 2; i < 6; i++ {
+				nMove.promotion = (int8)(i)
+				posMoves = append(posMoves, nMove)
+			}
+		} else {
+			posMoves = append(posMoves, nMove)
+		}
 		if unMoved {
 			if cb.board[p.pos+(2*forward)] == nil {
 				//cb.moves = append(cb.moves, Move{p.pos, p.pos + (2 * forward)})
@@ -48,7 +58,14 @@ func pawnMove(cb *ChessBoard, p Piece) {
 				//cb.moves = append(cb.moves, Move{p.pos, p.pos + forward - 1})
 				nMove.start = p.pos
 				nMove.end = p.pos + forward - 1
-				posMoves = append(posMoves, nMove)
+				if promote {
+					for i := 2; i < 6; i++ {
+						nMove.promotion = (int8)(i)
+						posMoves = append(posMoves, nMove)
+					}
+				} else {
+					posMoves = append(posMoves, nMove)
+				}
 			}
 		}
 		if cb.enpas == p.pos+forward-1 {
@@ -66,7 +83,14 @@ func pawnMove(cb *ChessBoard, p Piece) {
 				//cb.moves = append(cb.moves, Move{p.pos, p.pos + forward + 1})
 				nMove.start = p.pos
 				nMove.end = p.pos + forward + 1
-				posMoves = append(posMoves, nMove)
+				if promote {
+					for i := 2; i < 6; i++ {
+						nMove.promotion = (int8)(i)
+						posMoves = append(posMoves, nMove)
+					}
+				} else {
+					posMoves = append(posMoves, nMove)
+				}
 			}
 		}
 		if cb.enpas == p.pos+forward+1 {
@@ -98,7 +122,7 @@ func pawnMove(cb *ChessBoard, p Piece) {
 	}
 }
 
-func pawnAttack(cb *ChessBoard, p Piece) {
+func PawnAttack(cb *ChessBoard, p Piece) {
 	var forward int8
 	if p.color == 0 {
 		forward = 8

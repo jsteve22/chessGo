@@ -14,9 +14,14 @@ func main() {
 
 	b.InitBoard()
 
-	b.FENSet("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8")
+	// b.FENSet("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w KQkq -")
+	// b.FENSet("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -")
 	// b.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3K2R")
 	
+	// b.FENSet("6rb/7P/8/8/8/8/k4q2/7K w - -")
+	// b.FENSet("8/pp5P/kp6/1p6/1P6/KP5p/PP6/8 w - -")
+	b.FENSet("7N/pp6/kp6/1p6/1P6/KP5p/PP6/8 w - -")
+
 	n := 2
 	x := b.Perft(n)
 
