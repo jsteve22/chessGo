@@ -1,11 +1,11 @@
 package board
 
-func queenMove(cb *ChessBoard, p Piece) {
-	bishopMove(cb, p)
-	rookMove(cb, p)
+func QueenMove(cb *ChessBoard, p Piece) {
+	BishopMove(cb, p)
+	RookMove(cb, p)
 }
 
-func queenAttack(cb *ChessBoard, p Piece) {
-	bishopAttack(cb, p)
-	rookAttack(cb, p)
+func QueenAttack(cb *ChessBoard, p Piece) {
+	BishopAttack(cb, p)
+	RookAttack(cb, p)
 }

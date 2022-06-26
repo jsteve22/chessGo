@@ -35,7 +35,7 @@ func printHorizontalLine() {
 
 func (cb *ChessBoard) PrintMoves() {
 	fmt.Printf("enpas = (%v,%v)\n", (cb.enpas&56)>>3, cb.enpas&7)
-	fmt.Printf("%v\n", cb.nextmove)
+	fmt.Printf("%v\n", cb.nextMove)
 	for _, m := range cb.moves {
 		sFile := m.start & 7
 		sRank := (m.start & 56) >> 3

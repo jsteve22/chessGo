@@ -1,6 +1,6 @@
 package board
 
-func bishopMove(cb *ChessBoard, p Piece) {
+func BishopMove(cb *ChessBoard, p Piece) {
 	var rank int8
 	var file int8
 	var pos int8
@@ -139,7 +139,7 @@ func bishopMove(cb *ChessBoard, p Piece) {
 	}
 }
 
-func bishopAttack(cb *ChessBoard, p Piece) {
+func BishopAttack(cb *ChessBoard, p Piece) {
 	var rank int8
 	var file int8
 	var pos int8

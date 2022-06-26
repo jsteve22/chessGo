@@ -10,7 +10,7 @@ func (cb *ChessBoard) makeMove(move Move) {
 	appendMove.start = st
 	appendMove.end = en
 	appendMove.pieceMoved = cb.board[st]
-	appendMove.color = cb.nextmove
+	appendMove.color = cb.nextMove
 
 	if cb.board[en] != nil {
 		cb.board[en].alive = false
@@ -65,8 +65,8 @@ func (cb *ChessBoard) makeMove(move Move) {
 	// check if piece moved was a rook
 	if cb.board[en].piece == 4 {
 		// changed castling permissions
-		cb.castle[2*cb.board[en].color] = false
-		cb.castle[(2*cb.board[en].color)+1] = false
+		cb.castle[2*appendMove.color] = false
+		cb.castle[(2*appendMove.color)+1] = false
 	}
 
 	// check if piece moved was a pawn
@@ -98,6 +98,22 @@ func (cb *ChessBoard) makeMove(move Move) {
 			cb.board[enpasPawnPos] = nil
 			// cb.enpas = -1
 		}
+
+		// promote pawn to new piece
+		if move.promotion != 0 {
+			appendMove.pieceMoved.piece = move.promotion
+			appendMove.promotion = move.promotion
+			switch move.promotion {
+			case 2:
+				appendMove.pieceMoved.rep = (byte)('N' + (appendMove.pieceMoved.color * 32))
+			case 3:
+				appendMove.pieceMoved.rep = (byte)('B' + (appendMove.pieceMoved.color * 32))
+			case 4:
+				appendMove.pieceMoved.rep = (byte)('R' + (appendMove.pieceMoved.color * 32))
+			case 5:
+				appendMove.pieceMoved.rep = (byte)('Q' + (appendMove.pieceMoved.color * 32))
+			}
+		}
 	}
 
 	// add new move to slice
@@ -113,11 +129,16 @@ func (cb *ChessBoard) undoMove(move Move) {
 	var pieces *[16]Piece
 	lastMove := cb.prevMoves[len(cb.prevMoves)-1]
 
-	if cb.nextmove == 0 {
+	if cb.nextMove == 0 {
 		pieces = &cb.black
 	} else {
 		pieces = &cb.white
 		// pieces = &cb.black
+	}
+
+	if lastMove.promotion != 0 {
+		lastMove.pieceMoved.piece = 1
+		lastMove.pieceMoved.color = (byte)('P' + (32 * lastMove.pieceMoved.color))
 	}
 
 	st := move.start
@@ -225,7 +246,7 @@ func (cb *ChessBoard) GenMoves() {
 	var pieces *[16]Piece
 	//var forward int8
 
-	if cb.nextmove == 0 {
+	if cb.nextMove == 0 {
 		pieces = &cb.white
 		//forward = 8
 	} else {
@@ -238,18 +259,18 @@ func (cb *ChessBoard) GenMoves() {
 			continue
 		}
 		if p.piece == 0 {
-			kingMove(cb, p)
+			KingMove(cb, p)
 		} else if p.piece == 1 {
-			pawnMove(cb, p)
+			PawnMove(cb, p)
 			//cb.moves = append(cb.moves, Move{p.pos,p.pos+(uint8)(forward)})
 		} else if p.piece == 2 {
-			knightMove(cb, p)
+			KnightMove(cb, p)
 		} else if p.piece == 3 {
-			bishopMove(cb, p)
+			BishopMove(cb, p)
 		} else if p.piece == 4 {
-			rookMove(cb, p)
+			RookMove(cb, p)
 		} else if p.piece == 5 {
-			queenMove(cb, p)
+			QueenMove(cb, p)
 			// bishopMove(cb, p)
 			// rookMove(cb, p)
 		}
