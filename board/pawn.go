@@ -8,6 +8,7 @@ func PawnMove(cb *ChessBoard, p Piece) {
 	var unMoved bool
 	var promote bool
 	var nMove Move
+	color := cb.nextMove
 
 	// determine which direction to move a pawn, up for white/down for black
 	// also determine if current pawn has moved previously by determining
@@ -23,7 +24,7 @@ func PawnMove(cb *ChessBoard, p Piece) {
 	}
 
 	posMoves := make([]Move, 0)
-	cb.inCheck()
+	cb.inCheck(color)
 
 	// if nothing is in front of pawn, add move forward once
 	// if unmoved check if can push twice
@@ -101,21 +102,27 @@ func PawnMove(cb *ChessBoard, p Piece) {
 		}
 	}
 
+	// go through pinned pieces and see if the piece is pinned to king
+	pin := false
+	for _, pinP := range cb.pinned {
+		if pinP == cb.board[p.pos] {
+			pin = true
+			break
+		}
+	}
+
 	// go through posMoves and check if any of the moves would stop
 	// check and add those to cb.moves
 	// only check if it will prevent check if king already in check
-	if cb.check || true {
-		var resetEnpas int8
+	if cb.check || pin {
 		for _, m := range posMoves {
-			resetEnpas = cb.enpas
 			cb.makeMove(m)
-			cb.inCheck()
+			cb.inCheck(color)
 			if !cb.check {
 				cb.moves = append(cb.moves, m)
 			}
-			cb.enpas = resetEnpas
 			cb.undoMove(m)
-			cb.inCheck()
+			cb.inCheck(color)
 		}
 	} else {
 		cb.moves = append(cb.moves, posMoves...)
@@ -132,26 +139,12 @@ func PawnAttack(cb *ChessBoard, p Piece) {
 
 	// if not on left side, check if can take piece to the left
 	if (p.pos & 7) != 0 {
-		if cb.board[p.pos+forward-1] != nil {
-			if cb.board[p.pos+forward-1].color != p.color {
-				cb.attackSquares = append(cb.attackSquares, p.pos+forward-1)
-			}
-		}
-		if cb.enpas == p.pos+forward-1 {
-			cb.attackSquares = append(cb.attackSquares, p.pos+forward-1)
-		}
+		cb.attackSquares = append(cb.attackSquares, p.pos+forward-1)
 	}
 
 	// if not on right side, check if can take piece to the right
 	if (p.pos & 7) != 7 {
-		if cb.board[p.pos+forward+1] != nil {
-			if cb.board[p.pos+forward+1].color != p.color {
-				cb.attackSquares = append(cb.attackSquares, p.pos+forward+1)
-			}
-		}
-		if cb.enpas == p.pos+forward+1 {
-			cb.attackSquares = append(cb.attackSquares, p.pos+forward+1)
-		}
+		cb.attackSquares = append(cb.attackSquares, p.pos+forward+1)
 	}
 
 }

@@ -1,11 +1,11 @@
 package board
 
-func (cb *ChessBoard) checkAttacks() {
+func (cb *ChessBoard) checkAttacks(color uint8) {
 	cb.attackSquares = make([]int8, 0)
 
 	var pieces *[16]Piece
 
-	if cb.nextMove == 0 {
+	if color == 0 {
 		pieces = &cb.black
 		//forward = 8
 	} else {
@@ -32,6 +32,64 @@ func (cb *ChessBoard) checkAttacks() {
 			QueenAttack(cb, p)
 			// bishopAttack(cb, p)
 			// rookAttack(cb, p)
+		}
+	}
+}
+
+func (cb *ChessBoard) PinPieces(color uint8) {
+	// this function will add a list of all the pinned pieces
+	// to a king, so that if a piece is pinned it's moved can
+	// be checked if valid
+	cb.pinned = make([]*Piece, 0)
+
+	var pieces *[16]Piece
+
+	if color == 0 {
+		pieces = &cb.white
+	} else {
+		pieces = &cb.black
+	}
+
+	// figure out the king
+	var king Piece = pieces[0]
+
+	var pinP *Piece
+	pinP = nil
+
+	for i := -1; i < 2; i++ {
+		for j := -8; j < 16; j += 8 {
+			file := king.pos & 7
+			rank := king.pos & 56
+			pinP = nil
+			for {
+				file += (int8)(i)
+				rank += (int8)(j)
+				if rank > 56 || rank < 0 || file > 7 || file < 0 {
+					break
+				}
+				// fmt.Printf("king vision %v\n", file+rank)
+				// loop through each of the directions the king can go to
+				//
+				// check if square has a piece
+				if cb.board[rank+file] != nil {
+					// opposite color on same file/rank/diagonal as king
+					if cb.board[rank+file].color != color {
+						if cb.board[rank+file].piece == 1 {
+							continue
+						}
+						if pinP != nil {
+							cb.pinned = append(cb.pinned, pinP)
+						}
+						break
+					}
+					// same color piece
+					if pinP != nil {
+						// two same color pieces in a row
+						break
+					}
+					pinP = cb.board[rank+file]
+				}
+			}
 		}
 	}
 }

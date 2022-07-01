@@ -364,6 +364,9 @@ func TestPawnMove11(t *testing.T) {
 	// get the board to access certain pieces
 	b := cb.GetBoard()
 
+	// generate pinned pieces
+	cb.PinPieces(cb.GetNextMove())
+
 	// get piece at B5
 	pawn := b[33] 
 	// generate moves from the piece

@@ -5,12 +5,13 @@ func BishopMove(cb *ChessBoard, p Piece) {
 	var file int8
 	var pos int8
 	var nMove Move
+	color := cb.nextMove
 
 	file = p.pos & 7
 	rank = (p.pos & 56) >> 3
 
 	posMoves := make([]Move, 0)
-	cb.inCheck()
+	cb.inCheck(color)
 
 	// check top right
 	for {
@@ -118,21 +119,30 @@ func BishopMove(cb *ChessBoard, p Piece) {
 		//cb.moves = append(cb.moves, Move{p.pos, pos})
 	}
 
+	// go through pinned pieces and see if the piece is pinned to king
+	pin := false
+	for _, pinP := range cb.pinned {
+		if pinP == cb.board[p.pos] {
+			pin = true
+			break
+		}
+	}
+
 	// go through posMoves and check if any of the moves would stop
 	// check and add those to cb.moves
 	// only check if it will prevent check if king already in check
-	if cb.check || true {
+	if cb.check || pin {
 		var resetEnpas int8
 		for _, m := range posMoves {
 			resetEnpas = cb.enpas
 			cb.makeMove(m)
-			cb.inCheck()
+			cb.inCheck(color)
 			if !cb.check {
 				cb.moves = append(cb.moves, m)
 			}
 			cb.enpas = resetEnpas
 			cb.undoMove(m)
-			cb.inCheck()
+			cb.inCheck(color)
 		}
 	} else {
 		cb.moves = append(cb.moves, posMoves...)
