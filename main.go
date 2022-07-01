@@ -14,15 +14,35 @@ func main() {
 
 	b.InitBoard()
 
-	// b.FENSet("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w KQkq -")
-	// b.FENSet("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -")
-	// b.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3K2R")
-	
-	// b.FENSet("6rb/7P/8/8/8/8/k4q2/7K w - -")
-	// b.FENSet("8/pp5P/kp6/1p6/1P6/KP5p/PP6/8 w - -")
-	b.FENSet("7N/pp6/kp6/1p6/1P6/KP5p/PP6/8 w - -")
+	// generate a row of pawns for each side, this will be a test
+	// to see how fast Perft can generate moves at different depths
+ 	// b.FENSet("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
 
-	n := 2
+	// b.FENSet("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P1Q1/2N5/PPPBBPpP/R3K2R w KQkq -")
+
+	/*
+		var fenboard, fenside, fencas, fenenpas string
+		fmt.Printf("Enter FEN string: \n")
+		fmt.Scanf("%s %s %s %s",&fenboard,&fenside,&fencas,&fenenpas)
+		var FEN strings.Builder
+		FEN.Grow(256)
+		fmt.Fprintf(&FEN,"%s %s %s %s",fenboard,fenside,fencas,fenenpas)
+
+		// fmt.Printf("%s\n",FEN.String())
+		b.FENSet( FEN.String() )
+	*/
+
+	// b.FENSet("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R4K1R b kq -")
+	// b.FENSet("8/2p5/3p4/KP5r/1R3pPk/8/4P3/8 b - g3")
+	// b.PrintBoard()
+
+	// FENrec := b.GenFEN()
+
+	// fmt.Printf("%s\n",FENrec)
+
+	// b.PrintBoard()
+	
+	n := 6
 	x := b.Perft(n)
 
 	fmt.Printf("Perft(%v): %v\n",n,x)

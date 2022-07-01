@@ -246,3 +246,21 @@ func TestFENSet3(t *testing.T) {
 		t.Errorf("Enpas = %v; want 16\n",enpas)
 	}
 }
+
+func BenchmarkPerftCalcultationsDepth_5(b *testing.B) {
+	// this benchmark test will call Perft which
+	// is a recursive function that continuously 
+	// generates moves. This will test how fast 
+	// move generation is for my chess program
+
+	// create and init a chessboard
+	var cb board.ChessBoard
+	cb.InitBoard()
+	n := 2
+
+	for i := 0; i < b.N; i++ {
+		// cb.FENSet("k7/pppppppp/8/8/8/8/PPPPPPPP/7K w - -")
+		cb.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -")
+		cb.Perft(n)
+	}
+}

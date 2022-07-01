@@ -1,31 +1,43 @@
 package board
 
 func (cb *ChessBoard) makeMove(move Move) {
-	// this function will make a move and update prevMove
+	// this function will make a move across the board and update
+	// the move counter. Each move made should be reversible in
+	// undoMove, even if it's a capture, a castle, or a promotion.
+
+	// initialize the start and end of the given move
 	st := move.start
 	en := move.end
 
 	// create appendMove which will be added to end of prevMove slice
+	// use the appendMove to make the move across the board
 	var appendMove Move
 	appendMove.start = st
 	appendMove.end = en
 	appendMove.pieceMoved = cb.board[st]
 	appendMove.color = cb.nextMove
+	appendMove.prevEnpas = cb.enpas
+	appendMove.prevCastle[0] = cb.castle[0]
+	appendMove.prevCastle[1] = cb.castle[1]
+	appendMove.prevCastle[2] = cb.castle[2]
+	appendMove.prevCastle[3] = cb.castle[3]
 
+	// if the end position is not nil, a piece is captured
 	if cb.board[en] != nil {
+		// set piece to dead
 		cb.board[en].alive = false
+		// add captured piece to move
 		appendMove.pieceCaptured = cb.board[en]
 		appendMove.capPos = en
 	}
 
 	// this is the naive movement, for simple movement
-	cb.board[en] = cb.board[st]
+	cb.board[en] = appendMove.pieceMoved // cb.board[st]
+	appendMove.pieceMoved.pos = en
 	cb.board[st] = nil
-	cb.board[en].pos = en
 
-	// check if move was enpassant take
-	enpasMove := (cb.board[en].piece == 1 && en == cb.enpas)
-
+	// check if move was enpassant take and reset enpas
+	enpasMove := (appendMove.pieceMoved.piece == 1 && en == cb.enpas)
 	cb.enpas = -1
 
 	// check if move was a castle
@@ -64,9 +76,32 @@ func (cb *ChessBoard) makeMove(move Move) {
 
 	// check if piece moved was a rook
 	if cb.board[en].piece == 4 {
-		// changed castling permissions
-		cb.castle[2*appendMove.color] = false
-		cb.castle[(2*appendMove.color)+1] = false
+		// check which side the rook was on before updating castling
+		// check if on queen side
+		if appendMove.start == (int8)(56*appendMove.color) {
+			cb.castle[(2*appendMove.color)+1] = false
+		}
+		// check if on king side
+		if appendMove.start == (int8)(56*appendMove.color+7) {
+			cb.castle[2*appendMove.color] = false
+		}
+	}
+
+	// if start or end of a move is on A1,A8,H1, or H8 get rid of castling
+	if st == 0 || en == 0 {
+		cb.castle[1] = false
+	}
+
+	if st == 7 || en == 7 {
+		cb.castle[0] = false
+	}
+
+	if st == 56 || en == 56 {
+		cb.castle[3] = false
+	}
+
+	if st == 63 || en == 63 {
+		cb.castle[2] = false
 	}
 
 	// check if piece moved was a pawn
@@ -116,6 +151,9 @@ func (cb *ChessBoard) makeMove(move Move) {
 		}
 	}
 
+	// change turns on the board
+	cb.nextMove = 1 ^ cb.nextMove
+
 	// add new move to slice
 	cb.prevMoves = append(cb.prevMoves, appendMove)
 }
@@ -126,109 +164,60 @@ func (cb *ChessBoard) undoMove(move Move) {
 	// board. If provided a different move than the
 	// immediate previous one, then could cause issues
 
-	var pieces *[16]Piece
 	lastMove := cb.prevMoves[len(cb.prevMoves)-1]
 
-	if cb.nextMove == 0 {
-		pieces = &cb.black
-	} else {
-		pieces = &cb.white
-		// pieces = &cb.black
-	}
+	// reset board positions with the move
+	cb.nextMove = lastMove.color
+	cb.enpas = lastMove.prevEnpas
+	cb.castle[0] = lastMove.prevCastle[0]
+	cb.castle[1] = lastMove.prevCastle[1]
+	cb.castle[2] = lastMove.prevCastle[2]
+	cb.castle[3] = lastMove.prevCastle[3]
 
 	if lastMove.promotion != 0 {
+		// fmt.Printf("1 lastMove: %v\n", *lastMove.pieceMoved)
 		lastMove.pieceMoved.piece = 1
-		lastMove.pieceMoved.color = (byte)('P' + (32 * lastMove.pieceMoved.color))
+		lastMove.pieceMoved.rep = (byte)('P' + (32 * lastMove.pieceMoved.color))
+		// fmt.Printf("2 lastMove: %v\n", *lastMove.pieceMoved)
+		// fmt.Printf("\n")
 	}
 
 	st := move.start
 	en := move.end
 
 	// reset piece on board to previous position
-	cb.board[move.start] = cb.board[move.end]
-	cb.board[move.start].pos = move.start
+	cb.board[move.start] = lastMove.pieceMoved
+	lastMove.pieceMoved.pos = st
 	cb.board[move.end] = nil
 
-	// loop through other side's pieces and bring
-	// back a piece if it was taken on previous turn
-	for i, p := range pieces {
-		if p.pos == lastMove.capPos {
-			// p.alive = true
-			// cb.board[move.end] = &p
-			pieces[i].alive = true
-			// cb.board[lastMove.capPos] = lastMove.pieceCaptured
-			cb.board[lastMove.capPos] = &pieces[i]
-			cb.prevMoves[len(cb.prevMoves)-1] = Move{}
-			cb.prevMoves = cb.prevMoves[:len(cb.prevMoves)-1]
-			return
-		}
+	// bring pack a piece if captured
+	if lastMove.pieceCaptured != nil {
+		lastMove.pieceCaptured.alive = true
+		cb.board[lastMove.capPos] = lastMove.pieceCaptured
 	}
 
 	// check if move was a castle
 	// check if piece moved was a king
-	if cb.board[st].piece == 0 {
+	if lastMove.pieceMoved.piece == 0 {
 		stRank := (st & 56)
 		stFile := st & 7
 		enRank := (en & 56)
 		enFile := en & 7
-
-		// check if last move was a castle move
-		if lastMove.castle != 0 {
-			if lastMove.castle < 3 { // white castle
-				cb.castle[0] = true
-				cb.castle[1] = true
-			} else { // black castle
-				cb.castle[2] = true
-				cb.castle[3] = true
-			}
-		}
 
 		// check if king is castling and to which side
 		// if stRank == enRank && enFile - stFile == 2 {
 		if lastMove.castle == 1 || lastMove.castle == 3 {
 			// king is castling king side
 			// move rook to F1/F8
-			// lastMove.pieceCaptured.pos = lastMove.capPos
-			// cb.board[ ( stRank << 3) + 7 ] = lastMove.pieceCaptured
-			// cb.board[ ( stRank << 3) + 5 ] = nil
 			cb.board[en+1] = cb.board[st+1]
 			cb.board[en+1].pos = en + 1
 			cb.board[st+1] = nil
 		} else if stRank == enRank && stFile-enFile == 2 {
 			// king is castling queen side
 			// move rook to D1/D8
-			// lastMove.pieceCaptured.pos = lastMove.capPos
-			// cb.board[ stRank << 3] = lastMove.pieceCaptured
-			// cb.board[ ( stRank << 3) + 4 ] = nil
 			cb.board[stRank] = cb.board[st-1]
 			cb.board[stRank].pos = stRank
 			cb.board[st-1] = nil
-		}
-	}
-
-	// check if piece moved was a pawn
-	if cb.board[st].piece == 1 {
-		stRank := (st & 56) >> 3
-		// stFile := st & 7
-		// enRank := ( en & 56 ) >> 3
-		enFile := en & 7
-
-		// check if move was an enpas take
-		if en == cb.enpas {
-			// find which piece was captured and bring back to life
-			enpasPawnPos := (stRank << 3) + enFile
-			for i, p := range pieces {
-				if p.pos == (enpasPawnPos) {
-					pieces[i].alive = true
-					cb.board[enpasPawnPos] = &pieces[i]
-					/*
-						fmt.Printf("ENPAS UNDO (%v%v)\n",(string)('A'+enFile),stRank+1)
-						cb.PrintBoard()
-						cb.PrintPieces()
-						fmt.Printf("\n\n")
-					*/
-				}
-			}
 		}
 	}
 
@@ -239,7 +228,8 @@ func (cb *ChessBoard) undoMove(move Move) {
 
 func (cb *ChessBoard) GenMoves() {
 
-	cb.inCheck()
+	cb.inCheck(cb.nextMove)
+	cb.PinPieces(cb.nextMove)
 
 	cb.moves = make([]Move, 0)
 

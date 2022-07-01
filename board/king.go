@@ -5,9 +5,11 @@ func KingMove(cb *ChessBoard, p Piece) {
 	var rank int8
 	var next int8
 	var nMove Move
+	color := cb.nextMove
+	var skip bool
 
 	posMoves := make([]Move, 0)
-	cb.inCheck()
+	cb.inCheck(color)
 
 	file = p.pos & 7
 	rank = (p.pos & 56) >> 3
@@ -33,6 +35,16 @@ func KingMove(cb *ChessBoard, p Piece) {
 	for _, i := range vert {
 		for _, j := range horz {
 			next = p.pos + j + (i << 3)
+			skip = false
+			for _, as := range cb.attackSquares {
+				if as == next {
+					skip = true
+					break
+				}
+			}
+			if skip {
+				continue
+			}
 
 			if cb.board[next] == nil {
 				nMove.start = p.pos
@@ -51,19 +63,38 @@ func KingMove(cb *ChessBoard, p Piece) {
 	// check castling rights
 	if cb.castle[2*p.color] && !cb.check {
 		if cb.board[p.pos+1] == nil && cb.board[p.pos+2] == nil {
-			nMove.start = p.pos
-			nMove.end = p.pos + 2
-			posMoves = append(posMoves, nMove)
-			//cb.moves = append(cb.moves, Move{p.pos, p.pos + 2})
+			skip = false
+			for _, as := range cb.attackSquares {
+				// fmt.Printf("%v\n", as)
+				if as == p.pos+1 || as == p.pos+2 {
+					skip = true
+					break
+				}
+			}
+			if !skip {
+				nMove.start = p.pos
+				nMove.end = p.pos + 2
+				posMoves = append(posMoves, nMove)
+				//cb.moves = append(cb.moves, Move{p.pos, p.pos + 2})
+			}
 		}
 	}
 
 	if cb.castle[(2*p.color)+1] && !cb.check {
 		if cb.board[p.pos-1] == nil && cb.board[p.pos-2] == nil && cb.board[p.pos-3] == nil {
-			nMove.start = p.pos
-			nMove.end = p.pos - 2
-			posMoves = append(posMoves, nMove)
-			//cb.moves = append(cb.moves, Move{p.pos, p.pos - 2})
+			skip = false
+			for _, as := range cb.attackSquares {
+				if as == p.pos-1 || as == p.pos-2 {
+					skip = true
+					break
+				}
+			}
+			if !skip {
+				nMove.start = p.pos
+				nMove.end = p.pos - 2
+				posMoves = append(posMoves, nMove)
+				//cb.moves = append(cb.moves, Move{p.pos, p.pos - 2})
+			}
 		}
 	}
 
@@ -71,17 +102,14 @@ func KingMove(cb *ChessBoard, p Piece) {
 	// check and add those to cb.moves
 	// only check if it will prevent check if king already in check
 	if cb.check || true {
-		var resetEnpas int8
 		for _, m := range posMoves {
-			resetEnpas = cb.enpas
 			cb.makeMove(m)
-			cb.inCheck()
+			cb.inCheck(color)
 			if !cb.check {
 				cb.moves = append(cb.moves, m)
 			}
-			cb.enpas = resetEnpas
 			cb.undoMove(m)
-			cb.inCheck()
+			cb.inCheck(color)
 		}
 	} else {
 		cb.moves = append(cb.moves, posMoves...)

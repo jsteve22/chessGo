@@ -1,6 +1,9 @@
 package board
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type ChessBoard struct {
 	board [64]*Piece
@@ -10,6 +13,7 @@ type ChessBoard struct {
 	moves         []Move
 	prevMoves     []Move
 	attackSquares []int8
+	pinned        []*Piece
 
 	nextMove uint8
 	turn     uint
@@ -148,15 +152,15 @@ func (cb *ChessBoard) CheckMate() bool {
 	return len(cb.moves) == 0
 }
 
-func (cb *ChessBoard) inCheck() {
+func (cb *ChessBoard) inCheck(color uint8) {
 	// this function will check if the king of the current side is in check
 	cb.check = false
 
-	cb.checkAttacks()
+	cb.checkAttacks(color)
 
 	var pieces *[16]Piece
 
-	if cb.nextMove == 0 {
+	if color == 0 {
 		pieces = &cb.white
 		//forward = 8
 	} else {
@@ -294,39 +298,107 @@ func (cb *ChessBoard) FENSet(str string) {
 
 }
 
+func (cb *ChessBoard) GenFEN() string {
+	// this function will generate a FEN string
+	var FEN strings.Builder
+	FEN.Grow(256)
+
+	empSquare := 0
+
+	for i := 7; i >= 0; i-- {
+		for j := 0; j < 8; j++ {
+			if cb.board[(i<<3)+j] != nil {
+				if empSquare != 0 {
+					fmt.Fprintf(&FEN,"%d",empSquare)
+				}
+				fmt.Fprintf(&FEN,"%s",(string)(cb.board[(i<<3)+j].rep))
+				empSquare = -1
+			}
+			empSquare++
+		}
+		if empSquare != 0 {
+			fmt.Fprintf(&FEN,"%d",empSquare)
+		}
+		empSquare = 0
+		if ( i > 0) {
+			fmt.Fprintf(&FEN,"/")
+		}
+	}
+
+	fmt.Fprintf(&FEN," ")
+
+	if cb.nextMove == 0 {
+		fmt.Fprintf(&FEN,"w ")
+	} else {
+		fmt.Fprintf(&FEN,"b ")
+	}
+
+	if !(cb.castle[0] || cb.castle[1] || cb.castle[2] || cb.castle[3]) {
+		fmt.Fprintf(&FEN,"- ")
+	} else {
+		if cb.castle[0] {
+			fmt.Fprintf(&FEN,"K")
+		}
+		if cb.castle[1] {
+			fmt.Fprintf(&FEN,"Q")
+		}
+		if cb.castle[2] {
+			fmt.Fprintf(&FEN,"k")
+		}
+		if cb.castle[3] {
+			fmt.Fprintf(&FEN,"q")
+		}
+		fmt.Fprintf(&FEN," ")
+	}
+
+	if cb.enpas == -1 {
+		fmt.Fprintf(&FEN,"-")
+	} else {
+		fmt.Fprintf(&FEN,"%v%d",(string)((cb.enpas&7)+'A'),(cb.enpas&56)>>3+1)
+	}
+
+	// fmt.Printf("%s\n",FEN.String())
+
+	return FEN.String()
+}
+
 func (cb *ChessBoard) Perft(depth int) uint64 {
 	// this function will perform perft function to go to
 	// all moves in chess board
 
 	var nodes uint64
-	var resetEnpas int8
 
 	if depth == 0 {
 		return 1
 	}
 
 	nodes = 0
+	// fmt.Printf("nextMove before GenMoves(): %v\n",cb.nextMove)
+	// cb.PrintBoard()
 	cb.GenMoves()
+	// cb.PrintMoves()
+	// fmt.Printf("nextMove after GenMoves(): %v\n",cb.nextMove)
+	// fmt.Printf("attack squares: %v\n",cb.attackSquares)
 
 	cpyMoves := make([]Move, len(cb.moves))
 	copy(cpyMoves, cb.moves)
 
-	fmt.Printf("depth(%v): %v\n",depth,cpyMoves)
-	cb.PrintBoard()
+	// fmt.Printf("depth(%v): %v\n",depth,cpyMoves)
+	// cb.PrintBoard()
+	// cb.PrintPieces()
 
 	// QPerft
-	if depth == 1 {
-		return (uint64)(len(cb.moves))
-	}
-	
+	/*
+		if depth == 1 {
+			return (uint64)(len(cb.moves))
+		}
+	*/
 
 	for _, m := range cpyMoves {
-		resetEnpas = cb.enpas
 		cb.makeMove(m)
-		cb.nextMove = 1 ^ cb.nextMove
+		// fen := cb.GenFEN()
+		// fmt.Printf("%s\n",fen)
 		nodes += cb.Perft(depth - 1)
-		cb.nextMove = 1 ^ cb.nextMove
-		cb.enpas = resetEnpas
 		cb.undoMove(m)
 	}
 	return nodes
@@ -409,4 +481,9 @@ func (cb *ChessBoard) GetEnpas() int8 {
 func (cb *ChessBoard) GetNextMove() uint8 {
 	// return nextMove
 	return cb.nextMove
+}
+
+func (cb *ChessBoard) GetPinned() *[]*Piece {
+	// return pinned
+	return &cb.pinned
 }
