@@ -17,22 +17,38 @@ func (cb *ChessBoard) checkAttacks(color uint8) {
 		if !p.alive {
 			continue
 		}
-		if p.piece == 0 {
+		switch p.piece {
+		case 0:
 			KingAttack(cb, p)
-		} else if p.piece == 1 {
+		case 1:
 			PawnAttack(cb, p)
-			//cb.moves = append(cb.moves, Move{p.pos,p.pos+(uint8)(forward)})
-		} else if p.piece == 2 {
+		case 2:
 			KnightAttack(cb, p)
-		} else if p.piece == 3 {
+		case 3:
 			BishopAttack(cb, p)
-		} else if p.piece == 4 {
+		case 4:
 			RookAttack(cb, p)
-		} else if p.piece == 5 {
+		case 5:
 			QueenAttack(cb, p)
-			// bishopAttack(cb, p)
-			// rookAttack(cb, p)
 		}
+		/*
+			if p.piece == 0 {
+				KingAttack(cb, p)
+			} else if p.piece == 1 {
+				PawnAttack(cb, p)
+				//cb.moves = append(cb.moves, Move{p.pos,p.pos+(uint8)(forward)})
+			} else if p.piece == 2 {
+				KnightAttack(cb, p)
+			} else if p.piece == 3 {
+				BishopAttack(cb, p)
+			} else if p.piece == 4 {
+				RookAttack(cb, p)
+			} else if p.piece == 5 {
+				QueenAttack(cb, p)
+				// bishopAttack(cb, p)
+				// rookAttack(cb, p)
+			}
+		*/
 	}
 }
 
@@ -79,6 +95,7 @@ func (cb *ChessBoard) PinPieces(color uint8) {
 						}
 						if pinP != nil {
 							cb.pinned = append(cb.pinned, pinP)
+							pinP.pinned = true
 						}
 						break
 					}

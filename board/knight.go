@@ -12,6 +12,15 @@ func KnightMove(cb *ChessBoard, p Piece) {
 	var nMove Move
 	color := cb.nextMove
 
+	// go through pinned pieces and see if the piece is pinned to king
+	pin := false
+	for _, pinP := range cb.pinned {
+		if pinP == cb.board[p.pos] {
+			pin = true
+			break
+		}
+	}
+
 	if file < 6 {
 		hlong = append(hlong, 2)
 	}
@@ -72,15 +81,6 @@ func KnightMove(cb *ChessBoard, p Piece) {
 				posMoves = append(posMoves, nMove)
 				//cb.moves = append(cb.moves, Move{p.pos, p.pos + i + j})
 			}
-		}
-	}
-
-	// go through pinned pieces and see if the piece is pinned to king
-	pin := false
-	for _, pinP := range cb.pinned {
-		if pinP == cb.board[p.pos] {
-			pin = true
-			break
 		}
 	}
 

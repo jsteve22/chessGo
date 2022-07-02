@@ -22,12 +22,16 @@ type ChessBoard struct {
 
 	castle [4]bool // KQkq
 	enpas  int8
+
+	minDist [512]int8
 }
 
 func (cb *ChessBoard) InitBoard() {
 
 	cb.white = initSide(0)
 	cb.black = initSide(1)
+
+	cb.calcMinDist()
 
 	/*
 		cb.castle[0] = true
@@ -388,11 +392,9 @@ func (cb *ChessBoard) Perft(depth int) uint64 {
 	// cb.PrintPieces()
 
 	// QPerft
-	/*
-		if depth == 1 {
-			return (uint64)(len(cb.moves))
-		}
-	*/
+	if depth == 1 {
+		return (uint64)(len(cb.moves))
+	}
 
 	for _, m := range cpyMoves {
 		cb.makeMove(m)
@@ -402,6 +404,64 @@ func (cb *ChessBoard) Perft(depth int) uint64 {
 		cb.undoMove(m)
 	}
 	return nodes
+}
+
+func (cb *ChessBoard) calcMinDist() {
+	// this function will calculate the minimum distance to each
+	// side from every square on the board
+	//
+	// the minimum distances will be stored in a single array
+	// with the offset as such:
+	// 6 bits for square position - 3 bits for direction
+	// square position: 0b000000 -> A1, 0b111111 -> H8
+	// direction: counter-clockwise rotation
+	// 000 -> right, 011 -> down, 100 -> up-right, 111 -> down-right
+
+	var file int8
+	var rank int8
+
+	// loop through all possible min distances for each square
+	for i := 0; i < 512; i += 8 {
+		file = (int8)(i >> 3) & 7
+		rank = (int8)(i >> 6) & 7
+
+		// calculate distances for single directions
+		// i.e. rank or file movement
+
+		// right
+		cb.minDist[i] = 7 - file
+		// up
+		cb.minDist[i+1] = 7 - rank
+		// left 
+		cb.minDist[i+2] = file
+		// down
+		cb.minDist[i+3] = rank
+
+		// up-right
+		if 7 - file > 7 - rank {
+			cb.minDist[i+4] = 7 - rank
+		} else {
+			cb.minDist[i+4] = 7 - file
+		}
+		// up-left
+		if 7 - rank > file {
+			cb.minDist[i+5] = file
+		} else {
+			cb.minDist[i+5] = 7 - rank
+		}
+		// down-left 
+		if file > rank {
+			cb.minDist[i+6] = rank
+		} else {
+			cb.minDist[i+6] = file
+		}
+		// down-right
+		if rank > 7 - file {
+			cb.minDist[i+7] = 7 - file
+		} else {
+			cb.minDist[i+7] = rank
+		}
+	}
 }
 
 func initSide(color uint8) [16]Piece {

@@ -248,21 +248,37 @@ func (cb *ChessBoard) GenMoves() {
 		if !p.alive {
 			continue
 		}
-		if p.piece == 0 {
+		switch p.piece {
+		case 0:
 			KingMove(cb, p)
-		} else if p.piece == 1 {
+		case 1:
 			PawnMove(cb, p)
-			//cb.moves = append(cb.moves, Move{p.pos,p.pos+(uint8)(forward)})
-		} else if p.piece == 2 {
+		case 2:
 			KnightMove(cb, p)
-		} else if p.piece == 3 {
+		case 3:
 			BishopMove(cb, p)
-		} else if p.piece == 4 {
+		case 4:
 			RookMove(cb, p)
-		} else if p.piece == 5 {
+		case 5:
 			QueenMove(cb, p)
-			// bishopMove(cb, p)
-			// rookMove(cb, p)
 		}
+		/*
+			if p.piece == 0 {
+				KingMove(cb, p)
+			} else if p.piece == 1 {
+				PawnMove(cb, p)
+				//cb.moves = append(cb.moves, Move{p.pos,p.pos+(uint8)(forward)})
+			} else if p.piece == 2 {
+				KnightMove(cb, p)
+			} else if p.piece == 3 {
+				BishopMove(cb, p)
+			} else if p.piece == 4 {
+				RookMove(cb, p)
+			} else if p.piece == 5 {
+				QueenMove(cb, p)
+				// bishopMove(cb, p)
+				// rookMove(cb, p)
+			}
+		*/
 	}
 }
