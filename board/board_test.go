@@ -247,6 +247,178 @@ func TestFENSet3(t *testing.T) {
 	}
 }
 
+func TestPerft1(t *testing.T) {
+	// this test will test the accuracy of the
+	// engine's current perft evaluation compared
+	// to the evaluations on https://www.chessprogramming.org/Perft_Results
+
+	// initiliaze chess board
+	var cb board.ChessBoard
+	cb.InitBoard()
+
+	// determine depth for Perft
+	// n := 5
+	n := 3
+
+	// use Fen representation from website
+	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+
+	// set board and check perft with depth n
+	cb.FENSet(fen)
+	x := cb.Perft(n)
+
+	// This is the precalculated node count from chessprogramming.org
+	// nodes := (uint64)(4865609) 
+	nodes := (uint64)(8902) 
+
+	if x != nodes {
+		t.Errorf("Perft(%v) = %v; want %v\n",n,x,nodes)
+	}
+}
+
+func TestPerft2(t *testing.T) {
+	// this test will test the accuracy of the
+	// engine's current perft evaluation compared
+	// to the evaluations on https://www.chessprogramming.org/Perft_Results
+
+	// initiliaze chess board
+	var cb board.ChessBoard
+	cb.InitBoard()
+
+	// determine depth for Perft
+	// n := 4
+	n := 3
+
+	// use Fen representation from website
+	fen := "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - "
+
+	// set board and check perft with depth n
+	cb.FENSet(fen)
+	x := cb.Perft(n)
+
+	// This is the precalculated node count from chessprogramming.org
+	// nodes := (uint64)(4085603) 
+	nodes := (uint64)(97862)
+
+	if x != nodes {
+		t.Errorf("Perft(%v) = %v; want %v\n",n,x,nodes)
+	}
+}
+
+func TestPerft3(t *testing.T) {
+	// this test will test the accuracy of the
+	// engine's current perft evaluation compared
+	// to the evaluations on https://www.chessprogramming.org/Perft_Results
+
+	// initiliaze chess board
+	var cb board.ChessBoard
+	cb.InitBoard()
+
+	// determine depth for Perft
+	n := 5
+
+	// use Fen representation from website
+	fen := "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -"
+
+	// set board and check perft with depth n
+	cb.FENSet(fen)
+	x := cb.Perft(n)
+
+	// This is the precalculated node count from chessprogramming.org
+	nodes := (uint64)(674624) 
+
+	if x != nodes {
+		t.Errorf("Perft(%v) = %v; want %v\n",n,x,nodes)
+	}
+}
+
+func TestPerft4(t *testing.T) {
+	// this test will test the accuracy of the
+	// engine's current perft evaluation compared
+	// to the evaluations on https://www.chessprogramming.org/Perft_Results
+
+	// initiliaze chess board
+	var cb board.ChessBoard
+	cb.InitBoard()
+
+	// determine depth for Perft
+	// n := 5
+	n := 3
+
+	// use Fen representation from website
+	fen := "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -"
+
+	// set board and check perft with depth n
+	cb.FENSet(fen)
+	x := cb.Perft(n)
+
+	// This is the precalculated node count from chessprogramming.org
+	// nodes := (uint64)(15833292) 
+	nodes := (uint64)(9467)
+
+	if x != nodes {
+		t.Errorf("Perft(%v) = %v; want %v\n",n,x,nodes)
+	}
+}
+
+func TestPerft5(t *testing.T) {
+	// this test will test the accuracy of the
+	// engine's current perft evaluation compared
+	// to the evaluations on https://www.chessprogramming.org/Perft_Results
+
+	// initiliaze chess board
+	var cb board.ChessBoard
+	cb.InitBoard()
+
+	// determine depth for Perft
+	// n := 5
+	n := 3
+
+	// use Fen representation from website
+	fen := "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -"
+
+	// set board and check perft with depth n
+	cb.FENSet(fen)
+	x := cb.Perft(n)
+
+	// This is the precalculated node count from chessprogramming.org
+	// nodes := (uint64)(89941194) 
+	nodes := (uint64)(62379) 
+
+	if x != nodes {
+		t.Errorf("Perft(%v) = %v; want %v\n",n,x,nodes)
+	}
+}
+
+func TestPerft6(t *testing.T) {
+	// this test will test the accuracy of the
+	// engine's current perft evaluation compared
+	// to the evaluations on https://www.chessprogramming.org/Perft_Results
+
+	// initiliaze chess board
+	var cb board.ChessBoard
+	cb.InitBoard()
+
+	// determine depth for Perft
+	// n := 5
+	n := 3
+
+	// use Fen representation from website
+	fen := "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - -"
+
+	// set board and check perft with depth n
+	cb.FENSet(fen)
+	x := cb.Perft(n)
+
+	// This is the precalculated node count from chessprogramming.org
+	// nodes := (uint64)(164075551) 
+	nodes := (uint64)(89890) 
+
+	if x != nodes {
+		t.Errorf("Perft(%v) = %v; want %v\n",n,x,nodes)
+	}
+}
+
 func BenchmarkPerftCalcultationsDepth_5(b *testing.B) {
 	// this benchmark test will call Perft which
 	// is a recursive function that continuously 
@@ -256,11 +428,104 @@ func BenchmarkPerftCalcultationsDepth_5(b *testing.B) {
 	// create and init a chessboard
 	var cb board.ChessBoard
 	cb.InitBoard()
-	n := 2
+	n := 5
+
+	fen1 := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+	// fen2 := "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - "
+	// fen3 := "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -"
+	// fen4 := "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -"
+	// fen5 := "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -"
+	// fen6 := "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - -"
 
 	for i := 0; i < b.N; i++ {
 		// cb.FENSet("k7/pppppppp/8/8/8/8/PPPPPPPP/7K w - -")
-		cb.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -")
+		// cb.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -")
+		cb.FENSet(fen1)
+		cb.Perft(n)
+	}
+}
+
+func BenchmarkBishopPerft(b *testing.B) {
+	// this benchmark will specifically test the
+	// ability to detect the movement of bishops
+
+	// create and init a chessboard
+	var cb board.ChessBoard
+	cb.InitBoard()
+	n := 4
+
+	fen := "2b1kb2/8/8/8/8/8/8/2B1KB2 w - -"	
+
+	for i := 0; i < b.N; i++ {
+		cb.FENSet(fen)
+		cb.Perft(n)
+	}
+}
+
+func BenchmarkRookPerft(b *testing.B) {
+	// this benchmark will specifically test the
+	// ability to detect the movement of rooks
+
+	// create and init a chessboard
+	var cb board.ChessBoard
+	cb.InitBoard()
+	n := 4
+
+	fen := "1r2k1r1/8/8/8/8/8/8/R3K2R w - -"
+
+	for i := 0; i < b.N; i++ {
+		cb.FENSet(fen)
+		cb.Perft(n)
+	}
+}
+
+func BenchmarkQueenPerft(b *testing.B) {
+	// this benchmark will specifically test the
+	// ability to detect the movement of queens
+
+	// create and init a chessboard
+	var cb board.ChessBoard
+	cb.InitBoard()
+	n := 4
+
+	fen := "2q1k3/8/8/8/8/8/8/3QK3 w - -"
+
+	for i := 0; i < b.N; i++ {
+		cb.FENSet(fen)
+		cb.Perft(n)
+	}
+}
+
+func BenchmarkKnightPerft(b *testing.B) {
+	// this benchmark will specifically test the
+	// ability to detect the movement of knights
+
+	// create and init a chessboard
+	var cb board.ChessBoard
+	cb.InitBoard()
+	n := 4
+
+	fen := "1n2k1n1/8/8/8/8/8/8/1N2K1N1 w - -"
+
+	for i := 0; i < b.N; i++ {
+		cb.FENSet(fen)
+		cb.Perft(n)
+	}
+}
+
+func BenchmarkPawnPerft(b *testing.B) {
+	// this benchmark will specifically test the
+	// ability to detect the movement of pawns
+
+	// create and init a chessboard
+	var cb board.ChessBoard
+	cb.InitBoard()
+	n := 4
+
+	fen := "4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - -"
+
+	for i := 0; i < b.N; i++ {
+		cb.FENSet(fen)
 		cb.Perft(n)
 	}
 }

@@ -42,7 +42,7 @@ func main() {
 
 	// b.PrintBoard()
 	
-	n := 6
+	n := 5
 	x := b.Perft(n)
 
 	fmt.Printf("Perft(%v): %v\n",n,x)
