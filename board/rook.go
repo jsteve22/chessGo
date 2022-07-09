@@ -155,15 +155,12 @@ func RookMove(cb *ChessBoard, p Piece) {
 	// check and add those to cb.moves
 	// only check if it will prevent check if king already in check
 	if cb.check || pin {
-		var resetEnpas int8
 		for _, m := range posMoves {
-			resetEnpas = cb.enpas
 			cb.makeMove(m)
 			cb.inCheck(color)
 			if !cb.check {
 				cb.moves = append(cb.moves, m)
 			}
-			cb.enpas = resetEnpas
 			cb.undoMove(m)
 			cb.inCheck(color)
 		}

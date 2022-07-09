@@ -72,6 +72,63 @@ func (cb *ChessBoard) PinPieces(color uint8) {
 	var pinP *Piece
 	pinP = nil
 
+	var pos int8
+	boardDist := [8]int8{1, 8, -1, -8, 9, 7, -9, -7}
+	minDistIndex := (int)(king.pos) << 3
+
+	// loop through the different directions that could
+	// reach the king
+
+	for i := 0; i < 8; i++ {
+		pos = king.pos
+		pinP = nil
+		for j := 0; j < (int)(cb.minDist[minDistIndex+i]); j++ {
+			// increment the direction of the king
+			pos += boardDist[i]
+
+			// check if a piece is looking at the king
+			if cb.board[pos] != nil {
+				// check if there is already a same color piece on same direction
+				if pinP == nil {
+					// check if it same color piece
+					if cb.board[pos].color != color {
+						if (i == 0 || i == 2) && cb.board[pos].piece == 1 {
+							continue
+						}
+						break
+					}
+
+					// it is same color
+					pinP = cb.board[pos]
+				} else {
+					// pinP != nil
+					if cb.board[pos].color == color {
+						break
+					}
+
+					// check if horizontal movement with pawn
+					if (i == 0 || i == 2) && cb.board[pos].piece == 1 {
+						continue
+					}
+
+					// check for queens, rooks, and bishops
+					if cb.board[pos].piece == 5 {
+						cb.pinned = append(cb.pinned, pinP)
+						pinP.pinned = true
+					} else if cb.board[pos].piece == 4 && i < 4 {
+						cb.pinned = append(cb.pinned, pinP)
+						pinP.pinned = true
+					} else if cb.board[pos].piece == 3 && i > 3 {
+						cb.pinned = append(cb.pinned, pinP)
+						pinP.pinned = true
+					}
+					break
+				}
+			}
+		}
+	}
+	return
+
 	for i := -1; i < 2; i++ {
 		for j := -8; j < 16; j += 8 {
 			file := king.pos & 7

@@ -17,7 +17,7 @@ func KnightMove(cb *ChessBoard, p Piece) {
 	for _, pinP := range cb.pinned {
 		if pinP == cb.board[p.pos] {
 			pin = true
-			break
+			return
 		}
 	}
 
