@@ -9,7 +9,7 @@ func QueenMove(cb *ChessBoard, p Piece) {
 	var nMove Move
 	color := cb.nextMove
 
-	posMoves := make([]Move, 0)
+	posMoves := make([]Move, 0, 32)
 
 	boardDist := [8]int8{1, 8, -1, -8, 9, 7, -9, -7}
 	minDistIndex := (int)(p.pos) << 3

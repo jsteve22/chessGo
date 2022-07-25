@@ -23,7 +23,7 @@ func PawnMove(cb *ChessBoard, p Piece) {
 		promote = (p.pos >> 3) == 1
 	}
 
-	posMoves := make([]Move, 0)
+	posMoves := make([]Move, 0, 4)
 	cb.inCheck(color)
 
 	// if nothing is in front of pawn, add move forward once

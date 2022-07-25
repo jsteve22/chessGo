@@ -1,7 +1,7 @@
 package board
 
 func (cb *ChessBoard) checkAttacks(color uint8) {
-	cb.attackSquares = make([]int8, 0)
+	cb.attackSquares = make([]int8, 0, 256)
 
 	var pieces *[16]Piece
 
@@ -56,7 +56,7 @@ func (cb *ChessBoard) PinPieces(color uint8) {
 	// this function will add a list of all the pinned pieces
 	// to a king, so that if a piece is pinned it's moved can
 	// be checked if valid
-	cb.pinned = make([]*Piece, 0)
+	cb.pinned = make([]*Piece, 0, 16)
 
 	var pieces *[16]Piece
 
