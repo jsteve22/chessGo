@@ -16,8 +16,8 @@ type ChessBoard struct {
 	pinned        []*Piece
 
 	nextMove uint8
-	turn     uint
-	revcnt   uint
+	fullmove uint
+	halfmove uint
 	check    bool
 
 	castle [4]bool // KQkq
@@ -43,10 +43,10 @@ func (cb *ChessBoard) InitBoard() {
 
 	cb.prevMoves = make([]Move, 0)
 	cb.nextMove = 0
-	cb.turn = 1
-	cb.revcnt = 0
+	cb.fullmove = 1
+	cb.halfmove = 0
 
-	cb.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -")
+	cb.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 }
 
@@ -102,12 +102,19 @@ func (cb *ChessBoard) UserMove(move string) bool {
 	st := sf + (sr << 3)
 	en := ef + (er << 3)
 
+	
+	var nMove Move
+	nMove.start = st
+	nMove.end = en
+
+	// cb.makeMove(nMove)
+
 	for _, m := range cb.moves {
 		var nMove Move
 		nMove.start = st
 		nMove.end = en
 		if nMove.start == m.start && nMove.end == m.end {
-			cb.permanentMove(nMove)
+			cb.makeMove(nMove)
 			return true
 		}
 	}
@@ -149,11 +156,24 @@ func (cb *ChessBoard) permanentMove(move Move) {
 	cb.makeMove(move)
 }
 
-func (cb *ChessBoard) CheckMate() bool {
+func (cb *ChessBoard) GameOver() bool {
 	// this function will return checkmate if the current
 	// side has no more moves to play
 
 	return len(cb.moves) == 0
+}
+
+func (cb *ChessBoard) Mate() uint8 {
+	// this function will return 0 for white checkmate,
+	// 1 for black checkmate, and 2 for stalemate/draw
+	//
+	// white checkmate means white loses, black wins
+	
+	if cb.check {
+		return cb.nextMove
+	}
+
+	return 2
 }
 
 func (cb *ChessBoard) inCheck(color uint8) {
@@ -203,6 +223,10 @@ func (cb *ChessBoard) FENSet(str string) {
 	cb.castle[2] = false
 	cb.castle[3] = false
 
+	// set fullmove & halfmove clock to 1 & 0
+	cb.fullmove = 1
+	cb.halfmove = 0
+
 	// set starting rank and file
 	rank := 7
 	file := 0
@@ -211,8 +235,13 @@ func (cb *ChessBoard) FENSet(str string) {
 
 	var addP *Piece
 
+	var halfmove uint
+	var fullmove uint
+	halfmove = 0
+	fullmove = 0
+
 	fenPart := 0 // know which part of FEN string we're reading in
-	// 0=board; 1=turn; 2=castle; 3=enpas; 4=halfmove; 5=turn
+	// 0=board; 1=turn; 2=castle; 3=enpas; 4=halfmove; 5=fullmove
 
 	// loop through the string
 	for _, c := range str {
@@ -295,6 +324,14 @@ func (cb *ChessBoard) FENSet(str string) {
 				cb.enpas += enpasRank
 				enpasCnt++
 			}
+		case 4: // halfmove clock
+			halfmove *= 10
+			halfmove += (uint)(c - '1')
+			cb.halfmove = halfmove
+		case 5: // fullmove clock
+			fullmove *= 10
+			fullmove += (uint)(c - '1')
+			cb.fullmove = fullmove
 		default:
 			continue
 		}

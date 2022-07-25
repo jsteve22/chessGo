@@ -286,8 +286,10 @@ func TestPerft2(t *testing.T) {
 	cb.InitBoard()
 
 	// determine depth for Perft
-	// n := 4
-	n := 3
+	// n := 6
+	// n := 5
+	n := 4
+	// n := 3
 
 	// use Fen representation from website
 	fen := "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - "
@@ -297,8 +299,10 @@ func TestPerft2(t *testing.T) {
 	x := cb.Perft(n)
 
 	// This is the precalculated node count from chessprogramming.org
-	// nodes := (uint64)(4085603) 
-	nodes := (uint64)(97862)
+	// nodes := (uint64)(8031647685) 
+	// nodes := (uint64)(193690690) 
+	nodes := (uint64)(4085603) 
+	// nodes := (uint64)(97862)
 
 	if x != nodes {
 		t.Errorf("Perft(%v) = %v; want %v\n",n,x,nodes)
@@ -430,7 +434,8 @@ func BenchmarkPerftCalcultationsDepth_5(b *testing.B) {
 	cb.InitBoard()
 	n := 5
 
-	fen1 := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
+	fen1 := "k7/8/8/8/3B4/8/8/7K w - -"
+	// fen1 := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -"
 	// fen2 := "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - "
 	// fen3 := "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -"
 	// fen4 := "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq -"

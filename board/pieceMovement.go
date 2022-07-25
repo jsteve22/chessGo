@@ -21,6 +21,12 @@ func (cb *ChessBoard) makeMove(move Move) {
 	appendMove.prevCastle[1] = cb.castle[1]
 	appendMove.prevCastle[2] = cb.castle[2]
 	appendMove.prevCastle[3] = cb.castle[3]
+	appendMove.fullmove = cb.fullmove
+	appendMove.halfmove = cb.halfmove
+
+	// increment clock
+	cb.fullmove = cb.fullmove + 1
+	cb.halfmove = cb.halfmove + 1
 
 	// if the end position is not nil, a piece is captured
 	if cb.board[en] != nil {
@@ -29,6 +35,8 @@ func (cb *ChessBoard) makeMove(move Move) {
 		// add captured piece to move
 		appendMove.pieceCaptured = cb.board[en]
 		appendMove.capPos = en
+		// reset halfmove counter
+		cb.halfmove = 0
 	}
 
 	// this is the naive movement, for simple movement
@@ -106,6 +114,9 @@ func (cb *ChessBoard) makeMove(move Move) {
 
 	// check if piece moved was a pawn
 	if cb.board[en].piece == 1 {
+		// reset halfmove counter
+		cb.halfmove = 0
+
 		stRank := (st & 56) >> 3
 		// stFile := st & 7
 		enRank := (en & 56) >> 3
@@ -169,6 +180,8 @@ func (cb *ChessBoard) undoMove(move Move) {
 	// reset board positions with the move
 	cb.nextMove = lastMove.color
 	cb.enpas = lastMove.prevEnpas
+	cb.fullmove = lastMove.fullmove
+	cb.halfmove = lastMove.halfmove
 	cb.castle[0] = lastMove.prevCastle[0]
 	cb.castle[1] = lastMove.prevCastle[1]
 	cb.castle[2] = lastMove.prevCastle[2]

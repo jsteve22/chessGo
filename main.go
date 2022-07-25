@@ -41,17 +41,20 @@ func main() {
 	// fmt.Printf("%s\n",FENrec)
 
 	// b.PrintBoard()
-	
-	n := 5
-	x := b.Perft(n)
+	/*
+		b.FENSet("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
 
-	fmt.Printf("Perft(%v): %v\n",n,x)
-	return
-	
+		n := 4
+		x := b.Perft(n)
 
+		fmt.Printf("Perft(%v): %v\n",n,x)
+		return
+	*/
+	
 	// b.FENSet("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQK2R")
 	// b.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
-	b.FENSet("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
+	// b.FENSet("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R")
+	b.FENSet("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 	var nextMove string
 	badMove := false
@@ -62,7 +65,7 @@ func main() {
 		cmd.Run()
 
 		b.PrintBoard()
-		b.PrintCastlePriv()
+		// b.PrintCastlePriv()
 
 		if badMove {
 			fmt.Printf("Bad move\n")
@@ -71,20 +74,28 @@ func main() {
 		b.GenMoves()
 
 		// check for checkmate
-		if b.CheckMate() {
-			fmt.Printf("GAME OVER\n")
+		if b.GameOver() {
+			loser := b.Mate()
+			if loser == 0 {
+				// fmt.Printf("GAME OVER\n")
+				fmt.Printf("checkmate, black wins\n")
+			} else if loser == 1{
+				fmt.Printf("checkmate, white wins\n")
+			} else {
+				fmt.Printf("Stalemate\n")
+			}
 			return
 		}
 
-		b.PrintPrevMoves()
-		b.PrintMoves()
+		// b.PrintPrevMoves()
+		// b.PrintMoves()
 		// fmt.Printf("\n")
 		// b.PrintPieces()
 
 		fmt.Scan(&nextMove)
 
 		if b.UserMove(nextMove) {
-			b.UpdateNextMove()
+			// b.UpdateNextMove()
 			badMove = false
 		} else {
 			badMove = true

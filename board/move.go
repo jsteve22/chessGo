@@ -11,6 +11,8 @@ type Move struct {
 	promotion     int8    // knight=2; bishop=3; rook=4; queen5
 	prevEnpas     int8    // hold the previous board's enpas position
 	prevCastle    [4]bool // hold the previous board's castle state
+	fullmove      uint    // fullmove clock
+	halfmove      uint    // halfmove clock
 }
 
 func (m *Move) GetStart() int8 {
