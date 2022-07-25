@@ -146,6 +146,7 @@ func KingAttack(cb *ChessBoard, p Piece) {
 		for _, j := range horz {
 			next = p.pos + j + (i << 3)
 
+			cb.attackSquares = append(cb.attackSquares, next)
 			if cb.board[next] == nil {
 				cb.attackSquares = append(cb.attackSquares, next)
 			} else if cb.board[next].color != p.color {
@@ -155,15 +156,17 @@ func KingAttack(cb *ChessBoard, p Piece) {
 	}
 
 	// check castling rights
-	if cb.castle[2*p.color] {
-		if cb.board[p.pos+1] == nil && cb.board[p.pos+2] == nil {
-			cb.attackSquares = append(cb.attackSquares, p.pos+2)
+	/*
+		if cb.castle[2*p.color] {
+			if cb.board[p.pos+1] == nil && cb.board[p.pos+2] == nil {
+				cb.attackSquares = append(cb.attackSquares, p.pos+2)
+			}
 		}
-	}
 
-	if cb.castle[(2*p.color)+1] {
-		if cb.board[p.pos-1] == nil && cb.board[p.pos-2] == nil && cb.board[p.pos-3] == nil {
-			cb.attackSquares = append(cb.attackSquares, p.pos-2)
+		if cb.castle[(2*p.color)+1] {
+			if cb.board[p.pos-1] == nil && cb.board[p.pos-2] == nil && cb.board[p.pos-3] == nil {
+				cb.attackSquares = append(cb.attackSquares, p.pos-2)
+			}
 		}
-	}
+	*/
 }

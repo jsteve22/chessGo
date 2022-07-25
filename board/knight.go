@@ -144,22 +144,14 @@ func KnightAttack(cb *ChessBoard, p Piece) {
 	for _, i := range hlong {
 		// check with long going horizontal and short going vertical
 		for _, j := range vshort {
-			if cb.board[p.pos+i+j] == nil {
-				cb.attackSquares = append(cb.attackSquares, p.pos+i+j)
-			} else if cb.board[p.pos+i+j].color != p.color {
-				cb.attackSquares = append(cb.attackSquares, p.pos+i+j)
-			}
+			cb.attackSquares = append(cb.attackSquares, p.pos+i+j)
 		}
 	}
 
 	for _, i := range vlong {
 		// check with long going vertical and short going horizontal
 		for _, j := range hshort {
-			if cb.board[p.pos+i+j] == nil {
-				cb.attackSquares = append(cb.attackSquares, p.pos+i+j)
-			} else if cb.board[p.pos+i+j].color != p.color {
-				cb.attackSquares = append(cb.attackSquares, p.pos+i+j)
-			}
+			cb.attackSquares = append(cb.attackSquares, p.pos+i+j)
 		}
 	}
 

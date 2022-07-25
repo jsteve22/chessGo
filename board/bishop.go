@@ -208,9 +208,7 @@ func BishopAttack(cb *ChessBoard, p Piece) {
 			// fmt.Printf("next square: %v\n",pos)
 
 			if cb.board[pos] != nil {
-				if cb.board[pos].color != p.color {
-					cb.attackSquares = append(cb.attackSquares, pos)
-				}
+				cb.attackSquares = append(cb.attackSquares, pos)
 				break
 			}
 			cb.attackSquares = append(cb.attackSquares, pos)
