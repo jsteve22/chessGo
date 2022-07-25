@@ -12,7 +12,7 @@ func BishopMove(cb *ChessBoard, p Piece) {
 		rank = (p.pos & 56) >> 3
 	*/
 
-	posMoves := make([]Move, 0)
+	posMoves := make([]Move, 0, 8)
 	cb.inCheck(color)
 
 	boardDist := [4]int8{9, 7, -9, -7}

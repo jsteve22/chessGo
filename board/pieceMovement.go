@@ -244,7 +244,7 @@ func (cb *ChessBoard) GenMoves() {
 	cb.inCheck(cb.nextMove)
 	cb.PinPieces(cb.nextMove)
 
-	cb.moves = make([]Move, 0)
+	cb.moves = make([]Move, 0, 256)
 
 	var pieces *[16]Piece
 	//var forward int8

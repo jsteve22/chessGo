@@ -5,7 +5,7 @@ func RookMove(cb *ChessBoard, p Piece) {
 	var nMove Move
 	color := cb.nextMove
 
-	posMoves := make([]Move, 0)
+	posMoves := make([]Move, 0, 8)
 	cb.inCheck(color)
 
 	boardDist := [4]int8{1, 8, -1, -8}

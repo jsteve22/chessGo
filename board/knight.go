@@ -2,10 +2,10 @@ package board
 
 func KnightMove(cb *ChessBoard, p Piece) {
 
-	vlong := make([]int8, 0)
-	vshort := make([]int8, 0)
-	hlong := make([]int8, 0)
-	hshort := make([]int8, 0)
+	vlong := make([]int8, 0, 4)
+	vshort := make([]int8, 0, 4)
+	hlong := make([]int8, 0, 4)
+	hshort := make([]int8, 0, 4)
 
 	file := p.pos & 7
 	rank := (p.pos & 56) >> 3
@@ -47,7 +47,7 @@ func KnightMove(cb *ChessBoard, p Piece) {
 		vshort = append(vshort, -8)
 	}
 
-	posMoves := make([]Move, 0)
+	posMoves := make([]Move, 0, 8)
 	cb.inCheck(color)
 
 	for _, i := range hlong {

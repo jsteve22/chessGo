@@ -8,7 +8,7 @@ func KingMove(cb *ChessBoard, p Piece) {
 	color := cb.nextMove
 	var skip bool
 
-	posMoves := make([]Move, 0)
+	posMoves := make([]Move, 0, 8)
 	cb.inCheck(color)
 
 	file = p.pos & 7
