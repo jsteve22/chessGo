@@ -2,6 +2,7 @@ package board
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
 )
 
@@ -126,6 +127,20 @@ func (cb *ChessBoard) UserMove(move string) bool {
 	*/
 }
 
+func (cb *ChessBoard) RandomMove() {
+	// this function will make a random move from the 
+	// generated moves
+
+	// get size of generated moves
+	sz := len(cb.moves)
+
+	// select random integer
+	ran := rand.Intn(sz)
+
+	// make the random move
+	cb.makeMove( cb.moves[ran] )
+}
+
 func (cb *ChessBoard) permanentMove(move Move) {
 	// this function will make a move that won't be
 	// undone. This move will permanently delete pieces
@@ -160,7 +175,7 @@ func (cb *ChessBoard) GameOver() bool {
 	// this function will return checkmate if the current
 	// side has no more moves to play
 
-	return len(cb.moves) == 0
+	return (len(cb.moves) == 0) || (cb.halfmove >= 100)
 }
 
 func (cb *ChessBoard) Mate() uint8 {
@@ -169,7 +184,7 @@ func (cb *ChessBoard) Mate() uint8 {
 	//
 	// white checkmate means white loses, black wins
 	
-	if cb.check {
+	if cb.check && len(cb.moves) == 0 {
 		return cb.nextMove
 	}
 
@@ -268,12 +283,12 @@ func (cb *ChessBoard) FENSet(str string) {
 				// check both sides to see if the
 				// piece can be found first
 				for i := 0; i < 16; i++ {
-					if cb.white[i].rep == (byte)(c) && !cb.white[i].alive {
+					if cb.white[i].rep == (rune)(c) && !cb.white[i].alive {
 						cb.white[i].alive = true
 						addP = &cb.white[i]
 						break
 					}
-					if cb.black[i].rep == (byte)(c) && !cb.black[i].alive {
+					if cb.black[i].rep == (rune)(c) && !cb.black[i].alive {
 						cb.black[i].alive = true
 						addP = &cb.black[i]
 						break
@@ -326,7 +341,7 @@ func (cb *ChessBoard) FENSet(str string) {
 			}
 		case 4: // halfmove clock
 			halfmove *= 10
-			halfmove += (uint)(c - '1')
+			halfmove += (uint)(c - '0')
 			cb.halfmove = halfmove
 		case 5: // fullmove clock
 			fullmove *= 10
@@ -504,9 +519,9 @@ func (cb *ChessBoard) calcMinDist() {
 func initSide(color uint8) [16]Piece {
 	var side [16]Piece
 
-	name := [6]byte{'k', 'q', 'r', 'b', 'n', 'p'}
+	name := [6]rune{'k', 'q', 'r', 'b', 'n', 'p'}
 	if color == 0 {
-		name = [6]byte{'K', 'Q', 'R', 'B', 'N', 'P'}
+		name = [6]rune{'K', 'Q', 'R', 'B', 'N', 'P'}
 	}
 
 	side[0] = Piece{alive: true, piece: 0, color: color, rep: name[0]}  // king

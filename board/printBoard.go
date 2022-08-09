@@ -3,7 +3,7 @@ package board
 import "fmt"
 
 func (b *ChessBoard) PrintBoard() {
-	var p byte
+	var p rune
 	var rank int = 7
 	var file int = 0
 	var i int

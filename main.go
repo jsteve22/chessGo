@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/jsteve22/chessGo/board"
 )
@@ -13,6 +15,8 @@ func main() {
 	var b board.ChessBoard
 
 	b.InitBoard()
+
+	rand.Seed(time.Now().Unix())
 
 	// generate a row of pawns for each side, this will be a test
 	// to see how fast Perft can generate moves at different depths
@@ -91,6 +95,9 @@ func main() {
 		// b.PrintMoves()
 		// fmt.Printf("\n")
 		// b.PrintPieces()
+		b.RandomMove()
+		time.Sleep(10 * time.Millisecond)
+		continue
 
 		fmt.Scan(&nextMove)
 

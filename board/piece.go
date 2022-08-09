@@ -5,7 +5,7 @@ type Piece struct {
 	pos    int8
 	piece  int8 // king=0; pawn=1; knight=2; bishop=3; rook=4; queen=5
 	color  uint8
-	rep    byte
+	rep    rune
 	pinned bool
 }
 
@@ -14,7 +14,7 @@ func (p *Piece) GetAlive() bool {
 	return p.alive
 }
 
-func (p *Piece) GetRep() byte {
+func (p *Piece) GetRep() rune {
 	// return rep attribute
 	return p.rep
 }

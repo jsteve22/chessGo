@@ -151,13 +151,13 @@ func (cb *ChessBoard) makeMove(move Move) {
 			appendMove.promotion = move.promotion
 			switch move.promotion {
 			case 2:
-				appendMove.pieceMoved.rep = (byte)('N' + (appendMove.pieceMoved.color * 32))
+				appendMove.pieceMoved.rep = (rune)('N' + (appendMove.pieceMoved.color * 32))
 			case 3:
-				appendMove.pieceMoved.rep = (byte)('B' + (appendMove.pieceMoved.color * 32))
+				appendMove.pieceMoved.rep = (rune)('B' + (appendMove.pieceMoved.color * 32))
 			case 4:
-				appendMove.pieceMoved.rep = (byte)('R' + (appendMove.pieceMoved.color * 32))
+				appendMove.pieceMoved.rep = (rune)('R' + (appendMove.pieceMoved.color * 32))
 			case 5:
-				appendMove.pieceMoved.rep = (byte)('Q' + (appendMove.pieceMoved.color * 32))
+				appendMove.pieceMoved.rep = (rune)('Q' + (appendMove.pieceMoved.color * 32))
 			}
 		}
 	}
@@ -190,7 +190,7 @@ func (cb *ChessBoard) undoMove(move Move) {
 	if lastMove.promotion != 0 {
 		// fmt.Printf("1 lastMove: %v\n", *lastMove.pieceMoved)
 		lastMove.pieceMoved.piece = 1
-		lastMove.pieceMoved.rep = (byte)('P' + (32 * lastMove.pieceMoved.color))
+		lastMove.pieceMoved.rep = (rune)('P' + (32 * lastMove.pieceMoved.color))
 		// fmt.Printf("2 lastMove: %v\n", *lastMove.pieceMoved)
 		// fmt.Printf("\n")
 	}
