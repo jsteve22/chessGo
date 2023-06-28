@@ -1,5 +1,6 @@
 package board
 
+/*
 func PawnMove(cb *ChessBoard, p Piece) {
 	// this function will calculate all of the moves a pawn
 	// can make on the board. Any possible moves will be appended
@@ -148,3 +149,5 @@ func PawnAttack(cb *ChessBoard, p Piece) {
 	}
 
 }
+
+*/

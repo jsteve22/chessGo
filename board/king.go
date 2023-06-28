@@ -1,5 +1,6 @@
 package board
 
+/*
 func KingMove(cb *ChessBoard, p Piece) {
 	var file int8
 	var rank int8
@@ -155,18 +156,5 @@ func KingAttack(cb *ChessBoard, p Piece) {
 		}
 	}
 
-	// check castling rights
-	/*
-		if cb.castle[2*p.color] {
-			if cb.board[p.pos+1] == nil && cb.board[p.pos+2] == nil {
-				cb.attackSquares = append(cb.attackSquares, p.pos+2)
-			}
-		}
-
-		if cb.castle[(2*p.color)+1] {
-			if cb.board[p.pos-1] == nil && cb.board[p.pos-2] == nil && cb.board[p.pos-3] == nil {
-				cb.attackSquares = append(cb.attackSquares, p.pos-2)
-			}
-		}
-	*/
 }
+*/

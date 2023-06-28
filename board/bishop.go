@@ -1,16 +1,11 @@
 package board
 
+/*
 func BishopMove(cb *ChessBoard, p Piece) {
 	var pos int8
 	var nMove Move
 	color := cb.nextMove
 
-	/*
-		var rank int8
-		var file int8
-		file = p.pos & 7
-		rank = (p.pos & 56) >> 3
-	*/
 
 	posMoves := make([]Move, 0, 8)
 	cb.inCheck(color)
@@ -18,15 +13,6 @@ func BishopMove(cb *ChessBoard, p Piece) {
 	boardDist := [4]int8{9, 7, -9, -7}
 	minDistIndex := (int)(p.pos) << 3
 	minDistIndex += 4
-	/*
-		cb.PrintBoard()
-		fmt.Printf("curr pos: %v\n", p.pos)
-		fmt.Printf("minDistIndex: %v\n", minDistIndex)
-		fmt.Printf("minDist[0]: %v\n", cb.minDist[minDistIndex+0])
-		fmt.Printf("minDist[1]: %v\n", cb.minDist[minDistIndex+1])
-		fmt.Printf("minDist[2]: %v\n", cb.minDist[minDistIndex+2])
-		fmt.Printf("minDist[3]: %v\n", cb.minDist[minDistIndex+3])
-	*/
 
 	// loop through the min distances of the square
 	for i := 0; i < 4; i++ {
@@ -50,114 +36,6 @@ func BishopMove(cb *ChessBoard, p Piece) {
 			posMoves = append(posMoves, nMove)
 		}
 	}
-
-	/*
-		// check top right
-		for {
-			file++
-			rank++
-			if rank == 8 || file == 8 {
-				break
-			}
-			pos = (rank << 3) + file
-			// hit a piece
-			if cb.board[pos] != nil {
-				// other side's piece
-				if cb.board[pos].color != p.color {
-					nMove.start = p.pos
-					nMove.end = pos
-					posMoves = append(posMoves, nMove)
-					//cb.moves = append(cb.moves, Move{p.pos, pos})
-				}
-				break
-			}
-			nMove.start = p.pos
-			nMove.end = pos
-			posMoves = append(posMoves, nMove)
-			//cb.moves = append(cb.moves, Move{p.pos, pos})
-		}
-
-		file = p.pos & 7
-		rank = (p.pos & 56) >> 3
-		// check top left
-		for {
-			file--
-			rank++
-			if rank == 8 || file == -1 {
-				break
-			}
-			pos = (rank << 3) + file
-			// hit a piece
-			if cb.board[pos] != nil {
-				// other side's piece
-				if cb.board[pos].color != p.color {
-					nMove.start = p.pos
-					nMove.end = pos
-					posMoves = append(posMoves, nMove)
-					//cb.moves = append(cb.moves, Move{p.pos, pos})
-				}
-				break
-			}
-			nMove.start = p.pos
-			nMove.end = pos
-			posMoves = append(posMoves, nMove)
-			//cb.moves = append(cb.moves, Move{p.pos, pos})
-		}
-
-		file = p.pos & 7
-		rank = (p.pos & 56) >> 3
-		// check bottom left
-		for {
-			file--
-			rank--
-			if rank == -1 || file == -1 {
-				break
-			}
-			pos = (rank << 3) + file
-			// hit a piece
-			if cb.board[pos] != nil {
-				// other side's piece
-				if cb.board[pos].color != p.color {
-					nMove.start = p.pos
-					nMove.end = pos
-					posMoves = append(posMoves, nMove)
-					//cb.moves = append(cb.moves, Move{p.pos, pos})
-				}
-				break
-			}
-			nMove.start = p.pos
-			nMove.end = pos
-			posMoves = append(posMoves, nMove)
-			//cb.moves = append(cb.moves, Move{p.pos, pos})
-		}
-
-		file = p.pos & 7
-		rank = (p.pos & 56) >> 3
-		// check bottom right
-		for {
-			file++
-			rank--
-			if rank == -1 || file == 8 {
-				break
-			}
-			pos = (rank << 3) + file
-			// hit a piece
-			if cb.board[pos] != nil {
-				// other side's piece
-				if cb.board[pos].color != p.color {
-					nMove.start = p.pos
-					nMove.end = pos
-					posMoves = append(posMoves, nMove)
-					//cb.moves = append(cb.moves, Move{p.pos, pos})
-				}
-				break
-			}
-			nMove.start = p.pos
-			nMove.end = pos
-			posMoves = append(posMoves, nMove)
-			//cb.moves = append(cb.moves, Move{p.pos, pos})
-		}
-	*/
 
 	// go through pinned pieces and see if the piece is pinned to king
 	pin := false
@@ -215,90 +93,5 @@ func BishopAttack(cb *ChessBoard, p Piece) {
 		}
 	}
 
-	/*
-
-		file = p.pos & 7
-		rank = (p.pos & 56) >> 3
-		// check top right
-		for {
-			file++
-			rank++
-			if rank == 8 || file == 8 {
-				break
-			}
-			pos = (rank << 3) + file
-			// hit a piece
-			if cb.board[pos] != nil {
-				// other side's piece
-				if cb.board[pos].color != p.color {
-					cb.attackSquares = append(cb.attackSquares, pos)
-				}
-				break
-			}
-			cb.attackSquares = append(cb.attackSquares, pos)
-		}
-
-		file = p.pos & 7
-		rank = (p.pos & 56) >> 3
-		// check top left
-		for {
-			file--
-			rank++
-			if rank == 8 || file == -1 {
-				break
-			}
-			pos = (rank << 3) + file
-			// hit a piece
-			if cb.board[pos] != nil {
-				// other side's piece
-				if cb.board[pos].color != p.color {
-					cb.attackSquares = append(cb.attackSquares, pos)
-				}
-				break
-			}
-			cb.attackSquares = append(cb.attackSquares, pos)
-		}
-
-		file = p.pos & 7
-		rank = (p.pos & 56) >> 3
-		// check bottom left
-		for {
-			file--
-			rank--
-			if rank == -1 || file == -1 {
-				break
-			}
-			pos = (rank << 3) + file
-			// hit a piece
-			if cb.board[pos] != nil {
-				// other side's piece
-				if cb.board[pos].color != p.color {
-					cb.attackSquares = append(cb.attackSquares, pos)
-				}
-				break
-			}
-			cb.attackSquares = append(cb.attackSquares, pos)
-		}
-
-		file = p.pos & 7
-		rank = (p.pos & 56) >> 3
-		// check bottom right
-		for {
-			file++
-			rank--
-			if rank == -1 || file == 8 {
-				break
-			}
-			pos = (rank << 3) + file
-			// hit a piece
-			if cb.board[pos] != nil {
-				// other side's piece
-				if cb.board[pos].color != p.color {
-					cb.attackSquares = append(cb.attackSquares, pos)
-				}
-				break
-			}
-			cb.attackSquares = append(cb.attackSquares, pos)
-		}
-	*/
 }
+*/

@@ -1,10 +1,7 @@
 package board
 
+/*
 func QueenMove(cb *ChessBoard, p Piece) {
-	/*
-		BishopMove(cb, p)
-		RookMove(cb, p)
-	*/
 	var pos int8
 	var nMove Move
 	color := cb.nextMove
@@ -68,10 +65,6 @@ func QueenMove(cb *ChessBoard, p Piece) {
 }
 
 func QueenAttack(cb *ChessBoard, p Piece) {
-	/*
-		BishopAttack(cb, p)
-		RookAttack(cb, p)
-	*/
 	var pos int8
 
 	boardDist := [8]int8{1, 8, -1, -8, 9, 7, -9, -7}
@@ -94,3 +87,4 @@ func QueenAttack(cb *ChessBoard, p Piece) {
 		}
 	}
 }
+*/
