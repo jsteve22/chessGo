@@ -5,8 +5,8 @@ func GenerateMoves(game Game) []Move {
 
 	BLACK := uint8(8)
 	PAWN := uint8(1)
+	KNIGHT := uint8(2)
 	/*
-		KNIGHT := uint8(2)
 		BISHOP := uint8(3)
 		ROOK := uint8(4)
 		QUEEN := uint8(5)
@@ -17,12 +17,15 @@ func GenerateMoves(game Game) []Move {
 	if game.nextToPlay == byte('b') {
 		pieces = game.blackPieces
 		PAWN += BLACK
+		KNIGHT += BLACK
 	}
 
 	for _, piece := range pieces {
 		switch piece.piece {
 		case PAWN:
 			moves = append(moves, PawnGeneratePseudoLegalMoves(piece, game)...)
+		case KNIGHT:
+			moves = append(moves, KnightGeneratePseudoLegalMoves(piece, game)...)
 		}
 	}
 
