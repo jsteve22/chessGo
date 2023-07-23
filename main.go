@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -11,11 +12,14 @@ func main() {
 	// this is a comment
 
 
-	// currentGame := board.LoadBoard("8/2p5/3p4/KP5r/1R3pPk/8/4P3/8 w KQkq 23 13")
-	currentGame := board.LoadBoard("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2")
+	// currentGame := board.LoadBoard("8/2p5/3p4/KP5r/1R3pPk/8/4P3/8 w KQkq - 23 13")
+	currentGame := board.LoadBoard("rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
 	// currentGame := board.NewGame()
 
 	board.PrintGame(currentGame)
+
+	fmt.Printf("\n")
+	board.GenerateMoves(currentGame)
 
 	rand.Seed(time.Now().Unix())
 

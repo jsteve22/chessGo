@@ -1,5 +1,36 @@
 package board
 
+func GenerateMoves(game Game) []Move {
+	var moves []Move
+
+	BLACK := uint8(8)
+	PAWN := uint8(1)
+	/*
+		KNIGHT := uint8(2)
+		BISHOP := uint8(3)
+		ROOK := uint8(4)
+		QUEEN := uint8(5)
+		KING := uint8(6)
+	*/
+
+	pieces := game.whitePieces
+	if game.nextToPlay == byte('b') {
+		pieces = game.blackPieces
+		PAWN += BLACK
+	}
+
+	for _, piece := range pieces {
+		switch piece.piece {
+		case PAWN:
+			moves = append(moves, PawnGeneratePseudoLegalMoves(piece, game)...)
+		}
+	}
+
+	PrintMoves(game, moves)
+
+	return moves
+}
+
 /*
 func (cb *ChessBoard) makeMove(move Move) {
 	// this function will make a move across the board and update

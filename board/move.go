@@ -1,26 +1,45 @@
 package board
 
+import "fmt"
+
 type Move struct {
-	start         int8
-	end           int8
-	pieceMoved    *Piece  // pointer to piece that moved
-	pieceCaptured *Piece  // pointer if a piece was taken
-	capPos        int8    // position where the piece was captured
-	castle        uint8   // 1=K; 2=Q; 3=k; 4=q
-	color         uint8   // color of move
-	promotion     int8    // knight=2; bishop=3; rook=4; queen5
-	prevEnpas     int8    // hold the previous board's enpas position
-	prevCastle    [4]bool // hold the previous board's castle state
-	fullmove      uint    // fullmove clock
-	halfmove      uint    // halfmove clock
+	start uint8
+	end   uint8
 }
 
-func (m *Move) GetStart() int8 {
-	// return start
+func (m *Move) GetStart() uint8 {
 	return m.start
 }
 
-func (m *Move) GetEnd() int8 {
-	// return end
+func (m *Move) GetEnd() uint8 {
 	return m.end
+}
+
+func PrintMoves(game Game, moves []Move) {
+	fmt.Printf("{")
+	moveCutoff := 3
+	for ind, move := range moves {
+		printMove(game, move)
+		fmt.Printf(", ")
+		if (ind % moveCutoff == moveCutoff-1) && (ind != len(moves)-1) {
+			fmt.Printf("\n ")
+		}
+	}
+	fmt.Printf("}\n")
+}
+
+func printMove(game Game, move Move) {
+	startNotation, err := BoardIndexToChessNotation(move.start)
+	if err != nil {
+		fmt.Printf("%e", err)
+	}
+
+	endNotation, err := BoardIndexToChessNotation(move.end)
+	if err != nil {
+		fmt.Printf("%e", err)
+	}
+
+	pieceRep := PieceRepresentation(game.board[move.start])
+
+	fmt.Printf("(%s: %s -> %s)", pieceRep, startNotation, endNotation)
 }

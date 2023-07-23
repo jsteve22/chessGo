@@ -193,6 +193,7 @@ func FENEnPassant(reader *strings.Reader) (int8, error) {
 	if (err != nil) {
 		return -1, err
 	}
+	row = 8 - row
 
 	return (column + int8(row*8)), nil
 }
@@ -297,4 +298,32 @@ func BoardIndexToChessNotation(index uint8) (string, error) {
 	notation := fmt.Sprintf("%c%d", rank, file)
 
 	return notation, nil
+}
+
+func ChessNotationToBoardIndex(notation string) (uint8, error) {
+
+	if (len(notation) > 2) {
+		return 0, errors.New("value error: chess notation must be 2 characters long")
+	}
+
+	fileChar := notation[0]
+	file := uint8(fileChar) - uint8('A')
+	if file > 8 {
+		file = file + uint8('A') - uint8('a')
+	}
+
+	if file >= 8 {
+		errorString := fmt.Sprintf("value error: file value %d does not fit in chess board", file)
+		return 0, errors.New(errorString)
+	}
+
+	var rank uint8
+	fmt.Sscanf(string(notation[1]), "%d", &rank)
+	rank = 8 - rank
+	// fmt.Printf("str: %s\n", string(notation[1]))
+	// fmt.Printf("rank: %d\n", rank)
+
+	index := uint8((rank<<3) + file)
+
+	return index, nil
 }
