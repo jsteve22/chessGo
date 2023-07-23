@@ -1,5 +1,37 @@
 package board
 
+func GenerateMoves(game Game) []Move {
+	var moves []Move
+
+	BLACK := uint8(8)
+	PAWN := uint8(1)
+	/*
+		KNIGHT := uint8(2)
+		BISHOP := uint8(3)
+		ROOK := uint8(4)
+		QUEEN := uint8(5)
+		KING := uint8(6)
+	*/
+
+	pieces := game.whitePieces
+	if game.nextToPlay == byte('b') {
+		pieces = game.blackPieces
+		PAWN += BLACK
+	}
+
+	for _, piece := range pieces {
+		switch piece.piece {
+		case PAWN:
+			moves = append(moves, PawnGeneratePseudoLegalMoves(piece, game)...)
+		}
+	}
+
+	PrintMoves(game, moves)
+
+	return moves
+}
+
+/*
 func (cb *ChessBoard) makeMove(move Move) {
 	// this function will make a move across the board and update
 	// the move counter. Each move made should be reversible in
@@ -131,12 +163,6 @@ func (cb *ChessBoard) makeMove(move Move) {
 		// check if move was an enpas take
 		if enpasMove {
 			enpasPawnPos := (stRank << 3) + enFile
-			/*
-				fmt.Printf("ENPAS MADNESS (%v%v)\n",(string)('A'+enFile),stRank+1)
-				cb.PrintBoard()
-				cb.PrintPieces()
-				fmt.Printf("\n\n")
-			*/
 			// fmt.Printf("%v", enpasPawnPos )
 			appendMove.pieceCaptured = cb.board[enpasPawnPos]
 			appendMove.capPos = enpasPawnPos
@@ -275,23 +301,7 @@ func (cb *ChessBoard) GenMoves() {
 		case 5:
 			QueenMove(cb, p)
 		}
-		/*
-			if p.piece == 0 {
-				KingMove(cb, p)
-			} else if p.piece == 1 {
-				PawnMove(cb, p)
-				//cb.moves = append(cb.moves, Move{p.pos,p.pos+(uint8)(forward)})
-			} else if p.piece == 2 {
-				KnightMove(cb, p)
-			} else if p.piece == 3 {
-				BishopMove(cb, p)
-			} else if p.piece == 4 {
-				RookMove(cb, p)
-			} else if p.piece == 5 {
-				QueenMove(cb, p)
-				// bishopMove(cb, p)
-				// rookMove(cb, p)
-			}
-		*/
 	}
 }
+
+*/

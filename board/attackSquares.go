@@ -1,5 +1,6 @@
 package board
 
+/*
 func (cb *ChessBoard) checkAttacks(color uint8) {
 	cb.attackSquares = make([]int8, 0, 256)
 
@@ -31,7 +32,6 @@ func (cb *ChessBoard) checkAttacks(color uint8) {
 		case 5:
 			QueenAttack(cb, p)
 		}
-		/*
 			if p.piece == 0 {
 				KingAttack(cb, p)
 			} else if p.piece == 1 {
@@ -48,7 +48,6 @@ func (cb *ChessBoard) checkAttacks(color uint8) {
 				// bishopAttack(cb, p)
 				// rookAttack(cb, p)
 			}
-		*/
 	}
 }
 
@@ -167,3 +166,4 @@ func (cb *ChessBoard) PinPieces(color uint8) {
 		}
 	}
 }
+*/

@@ -1,5 +1,6 @@
 package board
 
+/*
 func KnightMove(cb *ChessBoard, p Piece) {
 
 	vlong := make([]int8, 0, 4)
@@ -156,3 +157,4 @@ func KnightAttack(cb *ChessBoard, p Piece) {
 	}
 
 }
+*/
