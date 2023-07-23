@@ -1,5 +1,87 @@
 package board
 
+func PawnGeneratePseudoLegalMoves(pawn Piece, game Game) []Move {
+	var moves []Move
+
+	lowerMask := uint8(8 - 1)
+	// upperMask := uint8(64 - 1 - lowerMask)
+
+	rank := pawn.pos >> 3
+	file := pawn.pos & lowerMask
+
+	leftSideBoard := uint8(0)
+	rightSideBoard := uint8(7)
+	emptySquare := uint8(0)
+
+	COLOR_BLACK := uint8(1)
+
+	nextRank := uint8(rank - 1)
+	enPasRank := uint8(6)
+	doubleRank := uint8(rank - 2)
+	if pawn.color == COLOR_BLACK {
+		nextRank = uint8(rank + 1)
+		enPasRank = uint8(1)
+		doubleRank = uint8(rank + 2)
+	}
+	var doubleForwardSquare uint8
+	var doubleForwardPiece uint8
+
+	leftSquare := (nextRank << 3) + file - 1
+	leftSquarePiece := game.board[leftSquare]
+	if file == leftSideBoard { // check if the pawn is at the edge of the board
+		goto skipleft
+	}
+	if (leftSquarePiece == emptySquare) && (leftSquare != uint8(game.enPassant)) { // check if there is a piece to take or if en passant is on the square
+		goto skipleft
+	}
+	if (leftSquarePiece != emptySquare) && (leftSquarePiece>>3^pawn.color) != 0 { // check if piece is other color
+		goto skipleft
+	}
+
+	moves = append(moves, Move{start: pawn.pos, end: leftSquare})
+skipleft:
+
+	rightSquare := (nextRank << 3) + file + 1
+	rightSquarePiece := game.board[rightSquare]
+	if file == rightSideBoard { // check if the pawn is at the edge of the board
+		goto skipright
+	}
+	if (rightSquarePiece == emptySquare) && (rightSquare != uint8(game.enPassant)) { // check if there is a piece to take or if en passant is on the square
+		goto skipright
+	}
+	if (rightSquarePiece != emptySquare) && (rightSquarePiece>>3^pawn.color) != 0 { // check if piece is other color
+		goto skipright
+	}
+
+	moves = append(moves, Move{start: pawn.pos, end: rightSquare})
+skipright:
+
+	forwardSquare := (nextRank << 3) + file
+	forwardSquarePiece := game.board[forwardSquare]
+	if forwardSquarePiece != emptySquare {
+		goto skipforward
+	}
+
+	// add pawn march forward move
+	moves = append(moves, Move{start: pawn.pos, end: forwardSquare})
+
+	if rank != enPasRank {
+		goto skipenpas
+	}
+
+	doubleForwardSquare = (doubleRank << 3) + file
+	doubleForwardPiece = game.board[doubleForwardSquare]
+	if doubleForwardPiece != emptySquare {
+		goto skipenpas
+	}
+
+	moves = append(moves, Move{start: pawn.pos, end: doubleForwardSquare})
+skipenpas:
+skipforward:
+
+	return moves
+}
+
 /*
 func PawnMove(cb *ChessBoard, p Piece) {
 	// this function will calculate all of the moves a pawn
