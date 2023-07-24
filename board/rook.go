@@ -16,7 +16,11 @@ func RookGeneratePseudoLegalMoves(rook Piece, game Game) []Move {
 	f := file
 	for r < BOARD_SIZE {
 		index := (r << 3) + f
-		if (game.board[index] != emptySquare) && (game.board[index]>>3)^rook.color == 0 {
+		if game.board[index] != emptySquare {
+			if (game.board[index]>>3)^rook.color == 0 {
+				break
+			}
+			moves = append(moves, Move{start: rook.pos, end: index})
 			break
 		}
 		moves = append(moves, Move{start: rook.pos, end: index})
@@ -27,7 +31,11 @@ func RookGeneratePseudoLegalMoves(rook Piece, game Game) []Move {
 	f = file
 	for r != 255 {
 		index := (r << 3) + f
-		if (game.board[index] != emptySquare) && (game.board[index]>>3)^rook.color == 0 {
+		if game.board[index] != emptySquare {
+			if (game.board[index]>>3)^rook.color == 0 {
+				break
+			}
+			moves = append(moves, Move{start: rook.pos, end: index})
 			break
 		}
 		moves = append(moves, Move{start: rook.pos, end: index})
@@ -38,7 +46,11 @@ func RookGeneratePseudoLegalMoves(rook Piece, game Game) []Move {
 	f = file + 1
 	for f < BOARD_SIZE {
 		index := (r << 3) + f
-		if (game.board[index] != emptySquare) && (game.board[index]>>3)^rook.color == 0 {
+		if game.board[index] != emptySquare {
+			if (game.board[index]>>3)^rook.color == 0 {
+				break
+			}
+			moves = append(moves, Move{start: rook.pos, end: index})
 			break
 		}
 		moves = append(moves, Move{start: rook.pos, end: index})
@@ -49,7 +61,11 @@ func RookGeneratePseudoLegalMoves(rook Piece, game Game) []Move {
 	f = file - 1
 	for f != 255 {
 		index := (r << 3) + f
-		if (game.board[index] != emptySquare) && (game.board[index]>>3)^rook.color == 0 {
+		if game.board[index] != emptySquare {
+			if (game.board[index]>>3)^rook.color == 0 {
+				break
+			}
+			moves = append(moves, Move{start: rook.pos, end: index})
 			break
 		}
 		moves = append(moves, Move{start: rook.pos, end: index})
@@ -57,6 +73,65 @@ func RookGeneratePseudoLegalMoves(rook Piece, game Game) []Move {
 	}
 
 	return moves
+}
+
+func RookGenerateAttackSquaresBitboard(rook Piece, game Game) uint64 {
+	bitboard := uint64(0)
+
+	emptySquare := uint8(0)
+	lowerMask := uint8(8 - 1)
+	// upperMask := uint8(64 - 1 - lowerMask)
+
+	rank := rook.pos >> 3
+	file := rook.pos & lowerMask
+
+	BOARD_SIZE := uint8(8)
+
+	r := rank + 1
+	f := file
+	for r < BOARD_SIZE {
+		index := (r << 3) + f
+		bitboard |= (1 << index)
+		if game.board[index] != emptySquare {
+			break
+		}
+		r++
+	}
+
+	r = rank - 1
+	f = file
+	for r != 255 {
+		index := (r << 3) + f
+		bitboard |= (1 << index)
+		if game.board[index] != emptySquare {
+			break
+		}
+		r--
+	}
+
+	r = rank
+	f = file + 1
+	for f < BOARD_SIZE {
+		index := (r << 3) + f
+		bitboard |= (1 << index)
+		if game.board[index] != emptySquare {
+			break
+		}
+		f++
+	}
+
+	r = rank
+	f = file - 1
+	for f != 255 {
+		index := (r << 3) + f
+		bitboard |= (1 << index)
+		if game.board[index] != emptySquare {
+			break
+		}
+		f--
+	}
+
+	return bitboard
 }
 
 /*

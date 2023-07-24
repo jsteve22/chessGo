@@ -50,6 +50,11 @@ func KnightGeneratePseudoLegalMoves(knight Piece, game Game) []Move {
 	return moves
 }
 
+func KnightGenerateAttackSquaresBitboard(knight Piece) uint64 {
+	KNIGHT_BITMAPS := getKnightBitmaps()
+	return KNIGHT_BITMAPS[knight.pos]
+}
+
 /*
 func KnightMove(cb *ChessBoard, p Piece) {
 

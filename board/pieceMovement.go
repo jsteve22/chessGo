@@ -1,5 +1,7 @@
 package board
 
+import "fmt"
+
 func GenerateMoves(game Game) []Move {
 	var moves []Move
 
@@ -9,9 +11,7 @@ func GenerateMoves(game Game) []Move {
 	BISHOP := uint8(3)
 	ROOK := uint8(4)
 	QUEEN := uint8(5)
-	/*
-		KING := uint8(6)
-	*/
+	KING := uint8(6)
 
 	pieces := game.whitePieces
 	if game.nextToPlay == byte('b') {
@@ -21,6 +21,7 @@ func GenerateMoves(game Game) []Move {
 		BISHOP += BLACK
 		ROOK += BLACK
 		QUEEN += BLACK
+		KING += BLACK
 	}
 
 	for _, piece := range pieces {
@@ -35,12 +36,58 @@ func GenerateMoves(game Game) []Move {
 			moves = append(moves, RookGeneratePseudoLegalMoves(piece, game)...)
 		case QUEEN:
 			moves = append(moves, QueenGeneratePseudoLegalMoves(piece, game)...)
+		case KING:
+			moves = append(moves, KingGeneratePseudoLegalMoves(piece, game)...)
 		}
 	}
 
 	PrintMoves(game, moves)
 
 	return moves
+}
+
+func GenerateAttacks(game Game, color uint8 ) uint64 {
+	bitboard := uint64(0)
+
+	COLOR_BLACK := uint8(1)
+	BLACK := uint8(8)
+	PAWN := uint8(1)
+	KNIGHT := uint8(2)
+	BISHOP := uint8(3)
+	ROOK := uint8(4)
+	QUEEN := uint8(5)
+	KING := uint8(6)
+
+	pieces := game.whitePieces
+	if color == COLOR_BLACK {
+		pieces = game.blackPieces
+		PAWN += BLACK
+		KNIGHT += BLACK
+		BISHOP += BLACK
+		ROOK += BLACK
+		QUEEN += BLACK
+		KING += BLACK
+	}
+
+	for _, piece := range pieces {
+		switch piece.piece {
+		case PAWN:
+			bitboard |= PawnGenerateAttackSquaresBitboard(piece)
+		case KNIGHT:
+			bitboard |= KnightGenerateAttackSquaresBitboard(piece)
+		case BISHOP:
+			bitboard |= BishopGenerateAttackSquaresBitboard(piece, game)
+		case ROOK:
+			bitboard |= RookGenerateAttackSquaresBitboard(piece, game)
+		case QUEEN:
+			bitboard |= QueenGenerateAttackSquaresBitboard(piece, game)
+		case KING:
+			bitboard |= KingGenerateAttackSquaresBitboard(piece)
+		}
+	}
+
+	fmt.Printf("bitboard: %d\n", bitboard)
+	return bitboard
 }
 
 /*

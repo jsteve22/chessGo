@@ -6,6 +6,15 @@ func QueenGeneratePseudoLegalMoves(queen Piece, game Game) []Move {
 	return moves
 }
 
+func QueenGenerateAttackSquaresBitboard(queen Piece, game Game) uint64 {
+	bitboard := uint64(0)
+
+	bitboard |= BishopGenerateAttackSquaresBitboard(queen, game)
+	bitboard |= RookGenerateAttackSquaresBitboard(queen, game)
+
+	return bitboard
+}
+
 /*
 func QueenMove(cb *ChessBoard, p Piece) {
 	var pos int8
