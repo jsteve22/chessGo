@@ -6,7 +6,8 @@ def main():
 
   print('{')
   for i in range(64):
-    bitmap_moves = generate_knight_psuedomoves(i)
+    # bitmap_moves = generate_knight_psuedomoves(i)
+    bitmap_moves = generate_king_psuedomoves(i)
     hex_bitmap = hex(bitmap_moves)
     if (len(hex_bitmap) != 18):
       padded_zeros = 18-len(hex_bitmap)
@@ -51,6 +52,25 @@ def generate_knight_psuedomoves(index):
       if (next_rank < 0) or (next_rank >= 8) or (next_file < 0) or (next_file >= 8):
         continue
       bitmap_moves += index_to_bitboard( (next_rank<<3) + next_file )
+  return bitmap_moves
+
+def generate_king_psuedomoves(index):
+  bottom_mask = 8-1
+  rank = index >> 3
+  file = index & bottom_mask
+
+  bitmap_moves = 0
+
+  for vert in [-1, 0, 1]:
+    for horz in [-1, 0, 1]:
+      if (vert == 0) and (horz == 0):
+        continue
+      next_rank = rank + vert
+      next_file = file + horz
+      if (next_rank < 0) or (next_rank >= 8) or (next_file < 0) or (next_file >= 8):
+        continue
+      bitmap_moves |= index_to_bitboard( (next_rank<<3) + next_file )
+
   return bitmap_moves
 
 if __name__ == '__main__':
