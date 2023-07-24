@@ -1,5 +1,64 @@
 package board
 
+func RookGeneratePseudoLegalMoves(rook Piece, game Game) []Move {
+	var moves []Move
+
+	emptySquare := uint8(0)
+	lowerMask := uint8(8 - 1)
+	// upperMask := uint8(64 - 1 - lowerMask)
+
+	rank := rook.pos >> 3
+	file := rook.pos & lowerMask
+
+	BOARD_SIZE := uint8(8)
+
+	r := rank + 1
+	f := file
+	for r < BOARD_SIZE {
+		index := (r << 3) + f
+		if (game.board[index] != emptySquare) && (game.board[index]>>3)^rook.color == 0 {
+			break
+		}
+		moves = append(moves, Move{start: rook.pos, end: index})
+		r++
+	}
+
+	r = rank - 1
+	f = file
+	for r != 255 {
+		index := (r << 3) + f
+		if (game.board[index] != emptySquare) && (game.board[index]>>3)^rook.color == 0 {
+			break
+		}
+		moves = append(moves, Move{start: rook.pos, end: index})
+		r--
+	}
+
+	r = rank
+	f = file + 1
+	for f < BOARD_SIZE {
+		index := (r << 3) + f
+		if (game.board[index] != emptySquare) && (game.board[index]>>3)^rook.color == 0 {
+			break
+		}
+		moves = append(moves, Move{start: rook.pos, end: index})
+		f++
+	}
+
+	r = rank
+	f = file - 1
+	for f != 255 {
+		index := (r << 3) + f
+		if (game.board[index] != emptySquare) && (game.board[index]>>3)^rook.color == 0 {
+			break
+		}
+		moves = append(moves, Move{start: rook.pos, end: index})
+		f--
+	}
+
+	return moves
+}
+
 /*
 func RookMove(cb *ChessBoard, p Piece) {
 	var pos int8
