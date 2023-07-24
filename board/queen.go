@@ -1,5 +1,11 @@
 package board
 
+func QueenGeneratePseudoLegalMoves(queen Piece, game Game) []Move {
+	moves := BishopGeneratePseudoLegalMoves(queen, game)
+	moves = append(moves, RookGeneratePseudoLegalMoves(queen, game)...)
+	return moves
+}
+
 /*
 func QueenMove(cb *ChessBoard, p Piece) {
 	var pos int8
