@@ -5,6 +5,7 @@ type Piece struct {
 	piece uint8 // pawn=1; knight=2; bishop=3; rook=4; queen=5; king=6
 	color uint8
 	rep   string
+	pinned bool
 }
 
 func (p *Piece) GetRep() string {

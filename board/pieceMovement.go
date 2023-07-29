@@ -1,7 +1,5 @@
 package board
 
-import "fmt"
-
 func GenerateMoves(game Game) []Move {
 	var moves []Move
 
@@ -86,7 +84,7 @@ func GenerateAttacks(game Game, color uint8 ) uint64 {
 		}
 	}
 
-	fmt.Printf("bitboard: %d\n", bitboard)
+	// fmt.Printf("bitboard: %d\n", bitboard)
 	return bitboard
 }
 

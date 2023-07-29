@@ -6,8 +6,14 @@ def main():
 
   print('{')
   for i in range(64):
-    # bitmap_moves = generate_knight_psuedomoves(i)
-    bitmap_moves = generate_king_psuedomoves(i)
+    # bitmap_moves = generate_knight_pseudomoves(i)
+    # bitmap_moves = generate_king_pseudomoves(i)
+    # bitmap_moves = generate_bishop_pseudomoves(i)
+    # bitmap_moves = generate_rook_pseudomoves(i)
+    bitmap_moves = generate_queen_pseudomoves(i)
+    # bitboard_print(bitmap_moves)
+    # print()
+    # continue
     hex_bitmap = hex(bitmap_moves)
     if (len(hex_bitmap) != 18):
       padded_zeros = 18-len(hex_bitmap)
@@ -30,7 +36,7 @@ def bitboard_print(bitboard):
 def index_to_bitboard(index):
   return 1 << (index)
 
-def generate_knight_psuedomoves(index):
+def generate_knight_pseudomoves(index):
   bottom_mask = 8-1
   rank = index >> 3
   file = index & bottom_mask
@@ -54,7 +60,7 @@ def generate_knight_psuedomoves(index):
       bitmap_moves += index_to_bitboard( (next_rank<<3) + next_file )
   return bitmap_moves
 
-def generate_king_psuedomoves(index):
+def generate_king_pseudomoves(index):
   bottom_mask = 8-1
   rank = index >> 3
   file = index & bottom_mask
@@ -72,6 +78,41 @@ def generate_king_psuedomoves(index):
       bitmap_moves |= index_to_bitboard( (next_rank<<3) + next_file )
 
   return bitmap_moves
+
+def generate_bishop_pseudomoves(index):
+  bottom_mask = 8-1
+  rank = index >> 3
+  file = index & bottom_mask
+
+  bitmap_moves = 0
+
+  for dirs in ((1, 1), (-1, 1), (1, -1), (-1, -1)):
+    rd, fd = dirs
+    ri, fi = rank + rd, file + fd
+    while (ri >= 0) and (ri < 8) and (fi >= 0) and (fi < 8):
+      bitmap_moves |= index_to_bitboard( (ri<<3) + fi )
+      ri, fi = ri + rd, fi + fd
+
+  return bitmap_moves
+
+def generate_rook_pseudomoves(index):
+  bottom_mask = 8-1
+  rank = index >> 3
+  file = index & bottom_mask
+
+  bitmap_moves = 0
+
+  for dirs in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+    rd, fd = dirs
+    ri, fi = rank + rd, file + fd
+    while (ri >= 0) and (ri < 8) and (fi >= 0) and (fi < 8):
+      bitmap_moves |= index_to_bitboard( (ri<<3) + fi )
+      ri, fi = ri + rd, fi + fd
+
+  return bitmap_moves
+
+def generate_queen_pseudomoves(index):
+  return generate_rook_pseudomoves(index) | generate_bishop_pseudomoves(index)
 
 if __name__ == '__main__':
   main()

@@ -13,7 +13,8 @@ func main() {
 
 
 	// currentGame := board.LoadBoard("8/2p5/3p4/KP5r/1R3pPk/8/4P3/8 w KQkq - 23 13")
-	currentGame := board.LoadBoard("rnb1kbnr/pp1ppppp/q7/2p5/4P3/7P/PPPP1PP1/RNBQKBNR w KQkq c6 0 2")
+	// currentGame := board.LoadBoard("rnb1kbnr/pp1ppppp/q7/2p5/4P3/7P/PPPP1PP1/RNBQKBNR w KQkq c6 0 2")
+	currentGame := board.LoadBoard("rn2kbnr/ppp1pppp/7q/8/8/8/PPPPN3/RNBQK2R w KQkq - 0 1")
 	// currentGame := board.NewGame()
 
 	board.PrintGame(currentGame)
