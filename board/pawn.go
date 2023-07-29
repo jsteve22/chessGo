@@ -82,6 +82,36 @@ skipforward:
 	return moves
 }
 
+func PawnGenerateAttackSquaresBitboard(pawn Piece) uint64 {
+	ROW_SIZE := uint8(8)
+	COLOR_BLACK := uint8(1)
+
+	LEFT_SIDE := uint8(0)
+	RIGHT_SIDE := uint8(ROW_SIZE - 1)
+
+	lowerMask := uint8(8 - 1)
+	file := pawn.pos & lowerMask
+
+	leftAttack := pawn.pos - ROW_SIZE - 1
+	rightAttack := pawn.pos - ROW_SIZE + 1
+	if pawn.color == COLOR_BLACK {
+		leftAttack = pawn.pos + ROW_SIZE - 1
+		rightAttack = pawn.pos + ROW_SIZE + 1
+	}
+
+	bitboard := uint64(0)
+
+	if file != LEFT_SIDE {
+		bitboard |= (1 << leftAttack)
+	}
+
+	if file != RIGHT_SIDE {
+		bitboard |= (1 << rightAttack)
+	}
+
+	return bitboard
+}
+
 /*
 func PawnMove(cb *ChessBoard, p Piece) {
 	// this function will calculate all of the moves a pawn

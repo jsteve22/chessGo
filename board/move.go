@@ -5,6 +5,7 @@ import "fmt"
 type Move struct {
 	start uint8
 	end   uint8
+	castle bool
 }
 
 func (m *Move) GetStart() uint8 {
