@@ -1,7 +1,7 @@
 <template>
-  <div :id="squareId" :class="squareStyling" @click="testPieceChange" >
-    <img v-if="pieceType!==0" :src="piecePath" :id="pieceId" class="active:cursor-grabbing" draggable="true" />
-    <div v-if="placable" class="w-1 h-1 bg-white">
+  <div :id="squareId" :class="squareStyling" >
+    <img v-if="pieceType!==0" :id="pieceId" :src="getImagePath(pieceType)" class="active:cursor-grabbing" draggable="true" />
+    <div v-if="placable && pieceType===0" class="w-1 h-1 bg-white">
     </div>
     <!--
     <div v-if="pieceType!==0" :id="pieceId" class="w-full h-full flex justify-center items-center" draggable="true" >
@@ -42,23 +42,28 @@ export default defineComponent({
 
     this.pieceType = this.piece || 0
 
-    this.updateImagePath()
-
     const element = document.getElementById(this.squareId);
     element?.addEventListener('dragstart', this.startDraggable);
     element?.addEventListener('dragover', (event:DragEvent) => {event?.preventDefault();}, false);
     element?.addEventListener('dragenter', this.enterDraggable);
     element?.addEventListener('dragleave', this.leaveDraggable);
     element?.addEventListener('drop', this.dropDraggable);
+
+    const pieceElement = document.getElementById(this.pieceId);
+    pieceElement?.addEventListener('dragover', (event:DragEvent) => {event?.preventDefault();}, false);
+    pieceElement?.addEventListener('dragenter', this.enterDraggable);
+    pieceElement?.addEventListener('dragleave', this.leaveDraggable);
   }, 
   updated() {
     const id = this.id || 0;
     this.sourceId = id;
-    this.$emit('pieceType', this.pieceType);
+    this.pieceType = this.piece || 0;
+
   },
   methods: {
     startDraggable() {
-      this.$emit('dragUpdate', this.id);
+      this.$emit('dragStart', this.id);
+      this.$emit('dragEnd', this.id);
     },
     enterDraggable(event:DragEvent) {
       const target = event.target;
@@ -81,12 +86,15 @@ export default defineComponent({
       return;
     },
     dropDraggable(event:DragEvent) {
-      const element = document.getElementById(`piece-${this.sourceId}`);
+      const source = document.getElementById(`square-${this.sourceId}`);
+      const element = source?.children[0];
       event?.preventDefault();
       const target = event.target;
-      this.$emit('dragUpdate', -1);
+
       if (target instanceof Element) {
         if (target.classList.contains('square')) {
+          const targetIdNumber = Number(target.id.split('-')[1]);
+          this.$emit('dragEnd', targetIdNumber);
           target.classList.remove('border-8');
           target.classList.remove('border-amber-500');
           // console.log('made it here in dropped');
@@ -95,44 +103,49 @@ export default defineComponent({
             console.log(`dropped ${element.id} in ${target.id}`);
             // element.classList.add('border-4');
             // element.classList.add('border-blue-200');
-            target.appendChild(element);
-            element.id = 'piece-' + target.id.split('-')[1];
-            console.log(`new element id ${element.id}`);
+            // element.remove();
+            // target.appendChild(element);
+            // element.id = 'piece-' + target.id.split('-')[1];
+            // console.log(`new element id ${element.id}`);
           }
+        }
+        if (target.parentElement?.classList.contains('square')) {
+          const targetIdNumber = Number(target.parentElement?.id.split('-')[1]);
+          this.$emit('dragEnd', targetIdNumber);
+          target.parentElement?.classList.remove('border-8');
+          target.parentElement?.classList.remove('border-amber-500');
         }
       }
     },
-    updateImagePath() {
-      if (this.pieceType !== 0) {
-        const white = 0; 
-        const PAWN = 1; const KNIGHT = 2; const BISHOP = 3; 
-        const ROOK = 4; const QUEEN = 5; const KING = 6;
-        const pieceColor = this.pieceType >> 3;
-        const pieceType = this.pieceType & 7;
-        let image_name = (pieceColor == white) ? 'white_' : 'black_';
-        switch (pieceType) {
-          case PAWN:
-            image_name += 'pawn.png';
-            break
-          case KNIGHT:
-            image_name += 'knight.png';
-            break
-          case BISHOP:
-            image_name += 'bishop.png';
-            break
-          case ROOK:
-            image_name += 'rook.png';
-            break
-          case QUEEN:
-            image_name += 'queen.png';
-            break
-          case KING:
-            image_name += 'king.png';
-            break
+    getImagePath(piece:number) {
+      const white = 0; 
+      const PAWN = 1; const KNIGHT = 2; const BISHOP = 3; 
+      const ROOK = 4; const QUEEN = 5; const KING = 6;
+      const pieceColor = piece >> 3;
+      const pieceType = piece & 7;
+      let image_name = (pieceColor == white) ? 'white_' : 'black_';
+      switch (pieceType) {
+        case PAWN:
+          image_name += 'pawn.png';
+          break
+        case KNIGHT:
+          image_name += 'knight.png';
+          break
+        case BISHOP:
+          image_name += 'bishop.png';
+          break
+        case ROOK:
+          image_name += 'rook.png';
+          break
+        case QUEEN:
+          image_name += 'queen.png';
+          break
+        case KING:
+          image_name += 'king.png';
+          break
         }
-        this.piecePath = require('@/assets/piece_pics/' + image_name);
+        return require('@/assets/piece_pics/' + image_name);
         // console.log(this.piecePath);
-      }
     },
     testPieceChange() {
       this.pieceType++;
@@ -140,7 +153,7 @@ export default defineComponent({
         this.pieceType = 9;
       if (this.pieceType === 7 + 8)
         this.pieceType = 0;
-      this.updateImagePath();
+      this.$emit('pieceUpdate', this.pieceType);
     }
   },
 });
