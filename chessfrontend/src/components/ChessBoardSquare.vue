@@ -49,16 +49,11 @@ export default defineComponent({
     element?.addEventListener('dragleave', this.leaveDraggable);
     element?.addEventListener('drop', this.dropDraggable);
 
-    const pieceElement = document.getElementById(this.pieceId);
-    pieceElement?.addEventListener('dragover', (event:DragEvent) => {event?.preventDefault();}, false);
-    pieceElement?.addEventListener('dragenter', this.enterDraggable);
-    pieceElement?.addEventListener('dragleave', this.leaveDraggable);
   }, 
   updated() {
     const id = this.id || 0;
     this.sourceId = id;
     this.pieceType = this.piece || 0;
-
   },
   methods: {
     startDraggable() {
