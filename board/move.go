@@ -45,3 +45,22 @@ func printMove(game Game, move Move) {
 
 	fmt.Printf("(%s: %s -> %s)", pieceRep, startNotation, endNotation)
 }
+
+type JsonMove struct {
+	Start uint8
+	End   uint8
+	Castle bool
+	Promotion uint8
+}
+
+func GetJsonMove(move Move) JsonMove {
+	return JsonMove{ Start: move.start, End: move.end, Castle: move.castle, Promotion: move.promotion }
+}
+
+func GetJsonMoves(moves []Move) []JsonMove {
+	jsons := make([]JsonMove, 0, len(moves))
+	for _, move := range moves {
+		jsons = append(jsons, GetJsonMove(move))
+	}
+	return jsons
+}
