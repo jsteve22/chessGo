@@ -11,13 +11,9 @@ type Game struct {
 	board [64]uint8
 	halfMoveClock uint
 	fullMoveClock uint
-	nextToPlay byte
+	nextToPlay uint8
 	castlingRights [4]bool // [ white king side, white queen side, black king side, black queen side ]
 	enPassant int8
-	whitePieces [16]Piece
-	whitePieceCount uint8
-	blackPieces [16]Piece
-	blackPieceCount uint8
 }
 
 /*
@@ -60,16 +56,16 @@ func LoadBoard(FEN string) Game {
 
 	FENBoard(reader, &(game.board))
 
-	// Load pieces into ararys
-	LoadPiecesFromBoard(&game)
-
 	// Load pieces into the board
 	// Load which side has the chance to play
 	token, err = reader.ReadByte()
 	if (err != nil) {
 		return game
 	}
-	game.nextToPlay = token
+	game.nextToPlay = uint8(0)
+	if (token == byte('b')) {
+		game.nextToPlay = uint8(1);
+	}
 	token, err = reader.ReadByte()
 	if (err != nil) {
 		return game
@@ -150,8 +146,13 @@ func FENCastlingRights(reader *strings.Reader, castlingRights *[4]bool) error {
 			return err
 		}
 
-		if (token == ' ' || token == '-') {
-			break
+		if (token == ' ') {
+			return nil
+		}
+
+		if (token == '-') {
+			reader.ReadByte()
+			return nil
 		}
 
 		if (token == 'K') {
@@ -167,7 +168,6 @@ func FENCastlingRights(reader *strings.Reader, castlingRights *[4]bool) error {
 			castlingRights[3] = true
 		}
 	}
-	return nil
 }
 
 func FENEnPassant(reader *strings.Reader) (int8, error) {
@@ -249,28 +249,28 @@ func FENClock(reader *strings.Reader) (uint, error)  {
 	return uint(clock), nil
 }
 
-func LoadPiecesFromBoard(game *Game) error {
-	game.whitePieceCount = 0
-	game.blackPieceCount = 0
+// func LoadPiecesFromBoard(game *Game) error {
+// 	game.whitePieceCount = 0
+// 	game.blackPieceCount = 0
 
-	// go through the board and load in the pieces
-	// into the black and white pieces array
-	for index := 0; index < 64; index++ {
-		pieceVal := game.board[index]
+// 	// go through the board and load in the pieces
+// 	// into the black and white pieces array
+// 	for index := 0; index < 64; index++ {
+// 		pieceVal := game.board[index]
 
-		if (pieceVal > 0 && (pieceVal&8) == 0) {
-			whitePiecesIndex := game.whitePieceCount
-			game.whitePieces[ whitePiecesIndex ], _ = GeneratePiece( pieceVal, uint8(index) )
-			game.whitePieceCount++
-		} else if (pieceVal > 0) {
-			blackPiecesIndex := game.blackPieceCount
-			game.blackPieces[ blackPiecesIndex ], _ = GeneratePiece( pieceVal, uint8(index) )
-			game.blackPieceCount++
-		}
-	}
+// 		if (pieceVal > 0 && (pieceVal&8) == 0) {
+// 			whitePiecesIndex := game.whitePieceCount
+// 			game.whitePieces[ whitePiecesIndex ], _ = GeneratePiece( pieceVal, uint8(index) )
+// 			game.whitePieceCount++
+// 		} else if (pieceVal > 0) {
+// 			blackPiecesIndex := game.blackPieceCount
+// 			game.blackPieces[ blackPiecesIndex ], _ = GeneratePiece( pieceVal, uint8(index) )
+// 			game.blackPieceCount++
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func GeneratePiece( pieceVal uint8, boardIndex uint8 ) (Piece, error) { 
 	var piece Piece

@@ -119,35 +119,40 @@ func PrintFullMoveClock(game Game) {
 }
 
 func PrintColorPieces(game Game) {
+	emptySquare := uint8(0)
+	WHITE := uint8(0)
+	BLACK := uint8(0)
 	fmt.Printf("White Side: ")
-	for index := uint8(0); index < game.whitePieceCount; index++ {
-		pieceRep := game.whitePieces[index].rep
-		fmt.Printf("%s ", pieceRep )
+	for _, square := range game.board {
+		if (square != emptySquare) && (square>>3)==WHITE {
+			pieceRep := PieceRepresentation(square)
+			fmt.Printf("%s ", pieceRep )
+		}
 	}
 	fmt.Printf("\n")
 	fmt.Printf("            ")
-	for index := uint8(0); index < game.whitePieceCount; index++ {
-		chessNotation, err := BoardIndexToChessNotation( game.whitePieces[index].pos )
-		fmt.Printf("%s ", chessNotation )
-		if (err != nil) {
-			fmt.Printf("Out of bounds position")
+	for index, square := range game.board {
+		if (square != emptySquare) && (square>>3)==WHITE {
+			chessNotation, _ := BoardIndexToChessNotation( uint8(index) )
+			fmt.Printf("%s ", chessNotation )
 		}
 	}
 	fmt.Printf("\n")
 	fmt.Printf("\n")
 
 	fmt.Printf("Black Side: ")
-	for index := uint8(0); index < game.blackPieceCount; index++ {
-		pieceRep := game.blackPieces[index].rep
-		fmt.Printf("%s ", pieceRep )
+	for _, square := range game.board {
+		if (square != emptySquare) && (square>>3)==BLACK {
+			pieceRep := PieceRepresentation(square)
+			fmt.Printf("%s ", pieceRep )
+		}
 	}
 	fmt.Printf("\n")
 	fmt.Printf("            ")
-	for index := uint8(0); index < game.blackPieceCount; index++ {
-		chessNotation, err := BoardIndexToChessNotation( game.blackPieces[index].pos )
-		fmt.Printf("%s ", chessNotation )
-		if (err != nil) {
-			fmt.Printf("Out of bounds position")
+	for index, square := range game.board {
+		if (square != emptySquare) && (square>>3)==BLACK {
+			chessNotation, _ := BoardIndexToChessNotation( uint8(index) )
+			fmt.Printf("%s ", chessNotation )
 		}
 	}
 	fmt.Printf("\n")

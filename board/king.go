@@ -28,6 +28,8 @@ func KingGeneratePseudoLegalMoves(king Piece, game Game) []Move {
 
 	KING_BITMAPS := getKingBitmaps()
 
+	ROOK := uint8(4 + (8 * king.color))
+
 	bitmap := KING_BITMAPS[king.pos]
 
 	// get only squares that are not targeted
@@ -62,16 +64,18 @@ func KingGeneratePseudoLegalMoves(king Piece, game Game) []Move {
 
 	if king_side {
 		empty_king_side := (game.board[king.pos+1] == emptySquare) && (game.board[king.pos+2] == emptySquare)
-		king_side_not_attacked := ((1<<(king.pos+1))|(1<<(king.pos+2)))&otherColorAttacks == 0
-		if empty_king_side && king_side_not_attacked {
+		king_side_not_attacked := ((1<<king.pos)|(1<<(king.pos+1))|(1<<(king.pos+2)))&otherColorAttacks == 0
+		rook_is_there := (game.board[king.pos+3] == ROOK)
+		if empty_king_side && king_side_not_attacked && rook_is_there {
 			moves = append(moves, Move{start: king.pos, end: king.pos + 2, castle: true})
 		}
 	}
 
 	if queen_side {
 		empty_queen_side := (game.board[king.pos-1] == emptySquare) && (game.board[king.pos-2] == emptySquare) && (game.board[king.pos-3] == emptySquare)
-		queen_side_not_attacked := ((1<<(king.pos-1))|(1<<(king.pos-2)))&otherColorAttacks == 0
-		if empty_queen_side && queen_side_not_attacked {
+		queen_side_not_attacked := ((1<<king.pos)|(1<<(king.pos-1))|(1<<(king.pos-2)))&otherColorAttacks == 0
+		rook_is_there := (game.board[king.pos-4] == ROOK)
+		if empty_queen_side && queen_side_not_attacked && rook_is_there {
 			moves = append(moves, Move{start: king.pos, end: king.pos - 2, castle: true})
 		}
 	}
@@ -79,9 +83,9 @@ func KingGeneratePseudoLegalMoves(king Piece, game Game) []Move {
 	return moves
 }
 
-func KingGenerateAttackSquaresBitboard(king Piece) uint64 {
+func KingGenerateAttackSquaresBitboard(king uint8) uint64 {
 	KING_BITMAPS := getKingBitmaps()
-	return KING_BITMAPS[king.pos]
+	return KING_BITMAPS[king]
 }
 
 /*

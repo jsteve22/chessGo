@@ -6,6 +6,7 @@ type Move struct {
 	start uint8
 	end   uint8
 	castle bool
+	promotion uint8
 }
 
 func (m *Move) GetStart() uint8 {

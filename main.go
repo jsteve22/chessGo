@@ -14,14 +14,19 @@ func main() {
 
 	// currentGame := board.LoadBoard("8/2p5/3p4/KP5r/1R3pPk/8/4P3/8 w KQkq - 23 13")
 	// currentGame := board.LoadBoard("rnb1kbnr/pp1ppppp/q7/2p5/4P3/7P/PPPP1PP1/RNBQKBNR w KQkq c6 0 2")
-	currentGame := board.LoadBoard("rn2kbnr/ppp1pppp/7q/8/8/8/PPPPN3/RNBQK2R w KQkq - 0 1")
+	// currentGame := board.LoadBoard("rn2kbnr/ppp1pppp/8/8/7q/8/PPPP1N2/RNBQK2R w KQkq - 0 1")
+	// currentGame := board.LoadBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ")
+	currentGame := board.LoadBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8 ")
 	// currentGame := board.NewGame()
 
-	board.PrintGame(currentGame)
+	// board.PrintGame(currentGame)
 
-	fmt.Printf("\n")
-	board.GenerateMoves(currentGame)
-	board.GenerateAttacks(currentGame, 0)
+	// fmt.Printf("\n")
+	// board.GenerateMoves(currentGame)
+	// board.GenerateAttacks(currentGame, 0)
+
+	depth := uint64(1)
+	fmt.Printf("Perft(%d) = %d\n", depth, board.Perft(currentGame, depth))
 
 	rand.Seed(time.Now().Unix())
 
