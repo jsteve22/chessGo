@@ -90,7 +90,7 @@ func TestCompleteTest(t *testing.T) {
 			var node uint64
 			fmt.Sscanf(lineSplit[i], "D%d %d", &i, &node)
 			nodes = append(nodes, node)
-			if (i == 3) {
+			if (i == 5) {
 				break
 			}
 		}
