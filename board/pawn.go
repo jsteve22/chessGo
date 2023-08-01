@@ -27,14 +27,15 @@ func PawnGeneratePseudoLegalMoves(pawn Piece, game Game) []Move {
 	var doubleForwardPiece uint8
 
 	leftSquare := (nextRank << 3) + file - 1
-	leftSquarePiece := game.board[leftSquare]
+	var leftSquarePiece uint8
 	if file == leftSideBoard { // check if the pawn is at the edge of the board
 		goto skipleft
 	}
+	leftSquarePiece = game.board[leftSquare]
 	if (leftSquarePiece == emptySquare) && (leftSquare != uint8(game.enPassant)) { // check if there is a piece to take or if en passant is on the square
 		goto skipleft
 	}
-	if (leftSquarePiece != emptySquare) && (leftSquarePiece>>3^pawn.color) != 0 { // check if piece is other color
+	if (leftSquarePiece != emptySquare) && (leftSquarePiece>>3^pawn.color) == 0 { // check if piece is other color
 		goto skipleft
 	}
 
@@ -42,14 +43,15 @@ func PawnGeneratePseudoLegalMoves(pawn Piece, game Game) []Move {
 skipleft:
 
 	rightSquare := (nextRank << 3) + file + 1
-	rightSquarePiece := game.board[rightSquare]
+	var rightSquarePiece uint8
 	if file == rightSideBoard { // check if the pawn is at the edge of the board
 		goto skipright
 	}
+	rightSquarePiece = game.board[rightSquare]
 	if (rightSquarePiece == emptySquare) && (rightSquare != uint8(game.enPassant)) { // check if there is a piece to take or if en passant is on the square
 		goto skipright
 	}
-	if (rightSquarePiece != emptySquare) && (rightSquarePiece>>3^pawn.color) != 0 { // check if piece is other color
+	if (rightSquarePiece != emptySquare) && (rightSquarePiece>>3^pawn.color) == 0 { // check if piece is other color
 		goto skipright
 	}
 
@@ -78,6 +80,15 @@ skipright:
 	moves = append(moves, Move{start: pawn.pos, end: doubleForwardSquare})
 skipenpas:
 skipforward:
+
+	for index, move := range moves {
+		if (move.end>>3) == 0 || (move.end>>3) == 7 {
+			moves[index] = Move{start: move.start, end: move.end, promotion: 2 + pawn.color*8}
+			moves = append(moves, Move{start: move.start, end: move.end, promotion: 3 + pawn.color*8})
+			moves = append(moves, Move{start: move.start, end: move.end, promotion: 4 + pawn.color*8})
+			moves = append(moves, Move{start: move.start, end: move.end, promotion: 5 + pawn.color*8})
+		}
+	}
 
 	return moves
 }

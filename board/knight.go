@@ -22,7 +22,8 @@ func getKnightBitmaps() []uint64 {
 }
 
 func KnightGeneratePseudoLegalMoves(knight Piece, game Game) []Move {
-	var moves []Move
+	// var moves []Move
+	moves := make([]Move, 0, 8)
 
 	KNIGHT_BITMAPS := getKnightBitmaps()
 
@@ -30,29 +31,20 @@ func KnightGeneratePseudoLegalMoves(knight Piece, game Game) []Move {
 	bitmap_pos := uint64(1)
 	emptySquare := uint8(0)
 
-	var potentialMoves []uint8
-
-	for i := 0; i < 64; i++ {
-		if (bitmap_pos & bitmap) > 0 {
-			potentialMoves = append(potentialMoves, uint8(i))
+	for i := uint8(0); i < 64; i++ {
+		if (bitmap_pos&bitmap) > 0 && (game.board[i] == emptySquare || ((game.board[i]>>3)^knight.color) != 0) {
+			moves = append(moves, Move{start: knight.pos, end: i})
 		}
 
 		bitmap_pos = bitmap_pos << 1
 	}
 
-	for _, potMove := range potentialMoves {
-		if game.board[potMove] != emptySquare && ((game.board[potMove]>>3)^knight.color) == 0 {
-			continue
-		}
-		moves = append(moves, Move{start: knight.pos, end: potMove})
-	}
-
 	return moves
 }
 
-func KnightGenerateAttackSquaresBitboard(knight Piece) uint64 {
+func KnightGenerateAttackSquaresBitboard(knight uint8) uint64 {
 	KNIGHT_BITMAPS := getKnightBitmaps()
-	return KNIGHT_BITMAPS[knight.pos]
+	return KNIGHT_BITMAPS[knight]
 }
 
 /*

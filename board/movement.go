@@ -1,9 +1,13 @@
 package board
 
 func GenerateMoves(game Game) []Move {
-	var moves []Move
+	// var moves []Move
+	// var pseudoMoves []Move
+	moves := make([]Move, 0, 32)
+	pseudoMoves := make([]Move, 0, 32)
 
 	BLACK := uint8(8)
+	COLOR_BLACK := uint8(1)
 	PAWN := uint8(1)
 	KNIGHT := uint8(2)
 	BISHOP := uint8(3)
@@ -11,9 +15,7 @@ func GenerateMoves(game Game) []Move {
 	QUEEN := uint8(5)
 	KING := uint8(6)
 
-	pieces := game.whitePieces
-	if game.nextToPlay == byte('b') {
-		pieces = game.blackPieces
+	if game.nextToPlay == COLOR_BLACK {
 		PAWN += BLACK
 		KNIGHT += BLACK
 		BISHOP += BLACK
@@ -22,29 +24,37 @@ func GenerateMoves(game Game) []Move {
 		KING += BLACK
 	}
 
-	for _, piece := range pieces {
-		switch piece.piece {
+	for index, piece := range game.board {
+		switch piece {
 		case PAWN:
-			moves = append(moves, PawnGeneratePseudoLegalMoves(piece, game)...)
+			pseudoMoves = append(pseudoMoves, PawnGeneratePseudoLegalMoves(Piece{pos: uint8(index), color: game.nextToPlay}, game)...)
 		case KNIGHT:
-			moves = append(moves, KnightGeneratePseudoLegalMoves(piece, game)...)
+			pseudoMoves = append(pseudoMoves, KnightGeneratePseudoLegalMoves(Piece{pos: uint8(index), color: game.nextToPlay}, game)...)
 		case BISHOP:
-			moves = append(moves, BishopGeneratePseudoLegalMoves(piece, game)...)
+			pseudoMoves = append(pseudoMoves, BishopGeneratePseudoLegalMoves(Piece{pos: uint8(index), color: game.nextToPlay}, game)...)
 		case ROOK:
-			moves = append(moves, RookGeneratePseudoLegalMoves(piece, game)...)
+			pseudoMoves = append(pseudoMoves, RookGeneratePseudoLegalMoves(Piece{pos: uint8(index), color: game.nextToPlay}, game)...)
 		case QUEEN:
-			moves = append(moves, QueenGeneratePseudoLegalMoves(piece, game)...)
+			pseudoMoves = append(pseudoMoves, QueenGeneratePseudoLegalMoves(Piece{pos: uint8(index), color: game.nextToPlay}, game)...)
 		case KING:
-			moves = append(moves, KingGeneratePseudoLegalMoves(piece, game)...)
+			pseudoMoves = append(pseudoMoves, KingGeneratePseudoLegalMoves(Piece{pos: uint8(index), color: game.nextToPlay}, game)...)
 		}
 	}
 
-	PrintMoves(game, moves)
+	for _, pseudoMove := range pseudoMoves {
+		nextGame := MakeMove(game, pseudoMove)
+		nextGame.nextToPlay ^= 1
+		if !IsKingInCheck(nextGame) {
+			moves = append(moves, pseudoMove)
+		}
+	}
+
+	// PrintMoves(game, moves)
 
 	return moves
 }
 
-func GenerateAttacks(game Game, color uint8 ) uint64 {
+func GenerateAttacks(game Game, color uint8) uint64 {
 	bitboard := uint64(0)
 
 	COLOR_BLACK := uint8(1)
@@ -56,9 +66,7 @@ func GenerateAttacks(game Game, color uint8 ) uint64 {
 	QUEEN := uint8(5)
 	KING := uint8(6)
 
-	pieces := game.whitePieces
 	if color == COLOR_BLACK {
-		pieces = game.blackPieces
 		PAWN += BLACK
 		KNIGHT += BLACK
 		BISHOP += BLACK
@@ -67,25 +75,138 @@ func GenerateAttacks(game Game, color uint8 ) uint64 {
 		KING += BLACK
 	}
 
-	for _, piece := range pieces {
-		switch piece.piece {
+	for index, square := range game.board {
+		switch square {
 		case PAWN:
-			bitboard |= PawnGenerateAttackSquaresBitboard(piece)
+			bitboard |= PawnGenerateAttackSquaresBitboard(Piece{pos: uint8(index), color: game.nextToPlay ^ 1})
 		case KNIGHT:
-			bitboard |= KnightGenerateAttackSquaresBitboard(piece)
+			bitboard |= KnightGenerateAttackSquaresBitboard(uint8(index))
 		case BISHOP:
-			bitboard |= BishopGenerateAttackSquaresBitboard(piece, game)
+			bitboard |= BishopGenerateAttackSquaresBitboard(uint8(index), game)
 		case ROOK:
-			bitboard |= RookGenerateAttackSquaresBitboard(piece, game)
+			bitboard |= RookGenerateAttackSquaresBitboard(uint8(index), game)
 		case QUEEN:
-			bitboard |= QueenGenerateAttackSquaresBitboard(piece, game)
+			bitboard |= QueenGenerateAttackSquaresBitboard(uint8(index), game)
 		case KING:
-			bitboard |= KingGenerateAttackSquaresBitboard(piece)
+			bitboard |= KingGenerateAttackSquaresBitboard(uint8(index))
 		}
 	}
 
 	// fmt.Printf("bitboard: %d\n", bitboard)
 	return bitboard
+}
+
+func MakeMove(game Game, move Move) Game {
+	// this function will make a move without question
+	// even if the move is illegal... might change later
+
+	// 1. update pieces for white/black
+	// 2. check for enpassant
+	// 3. make move on board
+	// 4. update enpassant
+	// 5. move rook if castling and update rook in pieces
+
+	XOR := uint8(1)
+	MASK := uint8(8 - 1)
+	endRank := move.end >> 3
+	endFile := move.end & MASK
+	startRank := move.start >> 3
+	startFile := move.start & MASK
+	COLOR := game.board[move.start] >> 3
+	PIECE := game.board[move.start] & MASK
+	PAWN := uint8(1)
+	KING := uint8(6)
+	ROOK := uint8(4)
+
+	if PIECE == PAWN && move.end == uint8(game.enPassant) {
+		deleteRank := endRank - 1 + ((COLOR ^ XOR) * 2)
+		game.board[(deleteRank<<3)+endFile] = 0
+	}
+
+	// king side castle
+	if PIECE == KING && startFile == 4 && endFile == 6 {
+		game.castlingRights[COLOR*2+0] = false
+		game.castlingRights[COLOR*2+1] = false
+		game.board[(startRank<<3)+5] = game.board[(startRank<<3)+7]
+		game.board[(startRank<<3)+7] = 0
+	}
+
+	// queen side castle
+	if PIECE == KING && startFile == 4 && endFile == 2 {
+		game.castlingRights[COLOR*2+0] = false
+		game.castlingRights[COLOR*2+1] = false
+		game.board[(startRank<<3)+3] = game.board[(startRank<<3)+0]
+		game.board[(startRank<<3)+0] = 0
+	}
+
+	if PIECE == ROOK && startFile == 0 {
+		game.castlingRights[COLOR*2+1] = false
+	}
+
+	if PIECE == ROOK && startFile == 7 {
+		game.castlingRights[COLOR*2+0] = false
+	}
+
+	if PIECE == KING && startFile == 4 {
+		game.castlingRights[COLOR*2+0] = false
+		game.castlingRights[COLOR*2+1] = false
+	}
+
+	// update board
+	// pieceTaken := game.board[move.end] != 0
+	game.board[move.end] = game.board[move.start]
+	game.board[move.start] = 0
+
+	// if pieceTaken {
+	// 	PrintBoard(game)
+	// }
+
+	// update color to move
+	game.nextToPlay ^= XOR
+
+	game.enPassant = -1
+	if PIECE == PAWN && (endRank-startRank == 2 || startRank-endRank == 2) {
+		enPasRank := endRank - 1 + ((COLOR ^ XOR) * 2)
+		game.enPassant = int8((enPasRank << 3) + endFile)
+	}
+
+	if PIECE == PAWN && move.promotion != 0 {
+		game.board[move.end] = move.promotion
+	}
+	// if PIECE == 1 && endRank == 4 && startRank == 6 {
+	// 	game.enPassant = int8((5 << 3) + endFile)
+	// }
+	// if PIECE == 1 && endRank == 3 && startRank == 1 {
+	// 	game.enPassant = int8((2 << 3) + endFile)
+	// }
+
+	return game
+}
+
+func IsKingInCheck(game Game) bool {
+	COLOR := game.nextToPlay
+	XOR := uint8(1)
+	// WHITE := uint8(0)
+	KING := uint8(6 + (8 * COLOR))
+
+	bitboardAttacks := GenerateAttacks(game, COLOR^XOR)
+
+	// pieces := game.whitePieces
+	// if COLOR == BLACK {
+	// 	pieces = game.blackPieces
+	// 	KING += 8
+	// }
+
+	kingBitBoard := uint64(0)
+
+	for index, square := range game.board {
+		if square == KING {
+			kingBitBoard = uint64(1 << index)
+			break
+		}
+	}
+
+	return (bitboardAttacks & (kingBitBoard)) != 0
 }
 
 /*
@@ -362,3 +483,42 @@ func (cb *ChessBoard) GenMoves() {
 }
 
 */
+
+// save for later I guess?
+// get pieces using piece lists instead of board
+// BLACK := uint8(8)
+// COLOR_BLACK := uint8(1)
+// PAWN := uint8(1)
+// KNIGHT := uint8(2)
+// BISHOP := uint8(3)
+// ROOK := uint8(4)
+// QUEEN := uint8(5)
+// KING := uint8(6)
+//
+// pieces := game.whitePieces
+// if game.nextToPlay == COLOR_BLACK {
+// pieces = game.blackPieces
+// PAWN += BLACK
+// KNIGHT += BLACK
+// BISHOP += BLACK
+// ROOK += BLACK
+// QUEEN += BLACK
+// KING += BLACK
+// }
+//
+// for _, piece := range pieces {
+// switch piece.piece {
+// case PAWN:
+// pseudoMoves = append(pseudoMoves, PawnGeneratePseudoLegalMoves(piece, game)...)
+// case KNIGHT:
+// pseudoMoves = append(pseudoMoves, KnightGeneratePseudoLegalMoves(piece, game)...)
+// case BISHOP:
+// pseudoMoves = append(pseudoMoves, BishopGeneratePseudoLegalMoves(piece, game)...)
+// case ROOK:
+// pseudoMoves = append(pseudoMoves, RookGeneratePseudoLegalMoves(piece, game)...)
+// case QUEEN:
+// pseudoMoves = append(pseudoMoves, QueenGeneratePseudoLegalMoves(piece, game)...)
+// case KING:
+// pseudoMoves = append(pseudoMoves, KingGeneratePseudoLegalMoves(piece, game)...)
+// }
+// }

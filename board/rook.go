@@ -96,15 +96,15 @@ func RookGeneratePseudoLegalMoves(rook Piece, game Game) []Move {
 	return moves
 }
 
-func RookGenerateAttackSquaresBitboard(rook Piece, game Game) uint64 {
+func RookGenerateAttackSquaresBitboard(rook uint8, game Game) uint64 {
 	bitboard := uint64(0)
 
 	emptySquare := uint8(0)
 	lowerMask := uint8(8 - 1)
 	// upperMask := uint8(64 - 1 - lowerMask)
 
-	rank := rook.pos >> 3
-	file := rook.pos & lowerMask
+	rank := rook >> 3
+	file := rook & lowerMask
 
 	BOARD_SIZE := uint8(8)
 

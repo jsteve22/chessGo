@@ -100,15 +100,15 @@ func BishopGeneratePseudoLegalMoves(bishop Piece, game Game) []Move {
 	return moves
 }
 
-func BishopGenerateAttackSquaresBitboard(bishop Piece, game Game) uint64 {
+func BishopGenerateAttackSquaresBitboard(bishop uint8, game Game) uint64 {
 	bitboard := uint64(0)
 
 	emptySquare := uint8(0)
 	lowerMask := uint8(8 - 1)
 	// upperMask := uint8(64 - 1 - lowerMask)
 
-	rank := bishop.pos >> 3
-	file := bishop.pos & lowerMask
+	rank := bishop >> 3
+	file := bishop & lowerMask
 
 	BOARD_SIZE := uint8(8)
 
