@@ -3,6 +3,10 @@
     <div>
       drag started in {{ startDrag }}
       drag ended in {{ endDrag }}
+      <button @click="fetchMoves" class="w-auto h-auto bg-emerald-200 rounded-lg p-1">
+        fetch Moves
+      </button>
+      <br/>
       <button type="button" @click="() => {const p:number[] = []; board.forEach((square) => p.push(square.piece)); console.log(p);}" class="w-auto h-auto bg-blue-50 rounded-lg p-1">
         print board
       </button>
@@ -67,14 +71,39 @@ export default defineComponent({
       startDrag: -1,
       endDrag: -1,
       FENinput: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
+      currentFEN: '',
+      moves: [],
     }
   }, 
   updated() {
     // console.log(this.pieces);
+
+    interface JsonMove {
+      Start: number,
+      End: number,
+      Promotion: number,
+      Castle: boolean,
+    }
+
+    let moves:Array<JsonMove> = this.moves;
+    if (moves == null) {
+      moves = [];
+    }
+
     const pieceColor = (this.startDrag !== -1) ? this.board[this.startDrag].piece >> 3 : 0;
     for (let i = 0; i < 64; i++) {
       const differentColor = (this.board[i].piece >> 3) !== pieceColor;
-      const isPlacable = (i !== this.startDrag) && ((this.board[i].piece === 0) || differentColor) && (this.startDrag !== -1);
+
+      // go through the moves and see which moves are available
+      let inMoves = false;
+      for (let j = 0; j < moves.length; j++) {
+        if (moves[j].Start === this.startDrag && moves[j].End === i) {
+          inMoves = true;
+        }
+      }
+      // const inMoves = true;
+
+      const isPlacable = (i !== this.startDrag) && ((this.board[i].piece === 0) || differentColor) && (this.startDrag !== -1) && (inMoves);
       this.board[i].placable = (isPlacable) ? true : false;
     }
   },
@@ -145,8 +174,52 @@ export default defineComponent({
         case 'k':
           return 6 + 8;
       }
-
       return 0;
+    },
+    NumberToFENByte(piece:number) {
+      switch (piece) {
+        case 1:
+          return 'P';
+        case 2:
+          return 'N';
+        case 3:
+          return 'B';
+        case 4:
+          return 'R';
+        case 5:
+          return 'Q';
+        case 6:
+          return 'K';
+        case 1 + 8:
+          return 'p';
+        case 2 + 8:
+          return 'n';
+        case 3 + 8:
+          return 'b';
+        case 4 + 8:
+          return 'r';
+        case 5 + 8:
+          return 'q';
+        case 6 + 8:
+          return 'k';
+      }
+      return '';
+    },
+    async fetchMoves() {
+      this.moves = []
+      try {
+        const res = await fetch( 
+          "http://localhost:12345/FEN", {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            mode: "cors", // no-cors, *cors, same-origin
+            body: this.FENinput, // body data type must match "Content-Type" header
+          }
+        );
+        const json = await res.json();
+        this.moves = JSON.parse(JSON.stringify(json.Data));
+      } catch (error) {
+        console.log(error);
+      }
     }
   },
 });
