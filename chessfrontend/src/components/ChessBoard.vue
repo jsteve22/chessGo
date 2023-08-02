@@ -3,10 +3,15 @@
     <div>
       drag started in {{ startDrag }}
       drag ended in {{ endDrag }}
-      <button @click="fetchMoves" class="w-auto h-auto bg-emerald-200 rounded-lg p-1">
+      <div v-if="inPromotion">
+        <button type="button" @click="board[endDrag].piece = 2" class="w-16 h-4 bg-emerald-600 hover:border-2 hover:border-orange-500">knight</button>
+        <button type="button" @click="board[endDrag].piece = 3" class="w-16 h-4 bg-emerald-600 hover:border-2 hover:border-orange-500">bishop</button>
+        <button type="button" @click="board[endDrag].piece = 4" class="w-16 h-4 bg-emerald-600 hover:border-2 hover:border-orange-500">rook</button>
+        <button type="button" @click="board[endDrag].piece = 5" class="w-16 h-4 bg-emerald-600 hover:border-2 hover:border-orange-500">queen</button>
+      </div>
+      <!-- <button @click="fetchMoves" class="w-auto h-auto bg-emerald-200 rounded-lg p-1">
         fetch Moves
-      </button>
-      <br/>
+      </button> -->
       <button type="button" @click="() => {const p:number[] = []; board.forEach((square) => p.push(square.piece)); console.log(p);}" class="w-auto h-auto bg-blue-50 rounded-lg p-1">
         print board
       </button>
@@ -36,6 +41,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import chessboardSquare from './ChessBoardSquare.vue';
+import { FENByteToNumber, NumberToFENByte, IndexToChessNotation, ChessNotationToIndex, LoadCastlingFEN, GenerateCastlingFEN } from './ChessFunctions';
 
 export default defineComponent({
   name: 'ChessBoard',
@@ -74,6 +80,11 @@ export default defineComponent({
       currentFEN: '',
       moves: [],
       nextToPlay: 0,
+      castling: [false, false, false, false],
+      enPassant: -1,
+      halfClock: 0,
+      fullClock: 0,
+      inPromotion: true,
     }
   }, 
   updated() {
@@ -109,28 +120,82 @@ export default defineComponent({
     }
   },
   methods: {
-    dropDraggable() {
+    dropDraggable() { // this will check if a move is made when the player drops the piece
       console.log(`startDrag = ${this.startDrag}`);
       console.log(`endDrag = ${this.endDrag}`);
       if (this.endDrag === this.startDrag || this.board[this.endDrag].placable === false) {
         this.startDrag = -1;
         return;
       }
-      if (this.startDrag !== -1) {
+
+      if (this.startDrag !== -1) {  // a move is made
+        const PIECE_COLOR = this.board[this.startDrag].piece >> 3;
+        const PIECE = this.board[this.startDrag].piece & 7;
+        const ROOK = 4;
+        const KING = 6;
+        const PAWN = 1;
+        
+        // update castling if the rooks move
+        if ((PIECE === ROOK) && ((this.startDrag & 7) === 7)) {
+          this.castling[2*PIECE_COLOR + 0] = false;
+        }
+        if ((PIECE === ROOK) && ((this.startDrag & 7) === 0)) {
+          this.castling[2*PIECE_COLOR + 1] = false;
+        }
+
+        // update castling if king moves
+        if (PIECE === KING) {
+          this.castling[2*PIECE_COLOR + 0] = false;
+          this.castling[2*PIECE_COLOR + 1] = false;
+        }
+
+        // a move is made
         this.board[this.endDrag].piece = this.board[this.startDrag].piece;
         this.board[this.startDrag].piece = 0;
         // console.log(this.board);
+
         this.nextToPlay = this.nextToPlay ^ 1;
+
+        // delete piece of pawn takes en passant
+        if ((PIECE === PAWN) && (this.endDrag === this.enPassant)) {
+          const deletePawn = this.endDrag + 8 + (PIECE_COLOR*-16);
+          this.board[deletePawn].piece = 0;
+        }
+
+        if ((PIECE === KING) && ((this.startDrag & 7) === 4) && ((this.endDrag & 7) === 6)) {
+          this.board[this.startDrag+1].piece = this.board[this.startDrag+3].piece;
+          this.board[this.startDrag+3].piece = 0;
+        }
+
+        if ((PIECE === KING) && ((this.startDrag & 7) === 4) && ((this.endDrag & 7) === 2)) {
+          this.board[this.startDrag-1].piece = this.board[this.startDrag-4].piece;
+          this.board[this.startDrag-4].piece = 0;
+        }
+
+        this.enPassant = -1;
+        // update en passant if a pawn is moved twice
+        if ((PIECE === PAWN) && (Math.abs((this.startDrag>>3)-(this.endDrag>>3)) === 2)) {
+          this.enPassant = this.endDrag + 8 + (PIECE_COLOR*-16);
+        }
+
+        // if it is a PAWN promotion, then wait for the promotion to be made
+        if ((PIECE === PAWN) && ((this.endDrag>>3)===0 || (this.endDrag>>3)===7)){
+          this.inPromotion = true;
+          this.board[this.endDrag].piece = 5 + (8*PIECE_COLOR);
+        }
+
         this.generateFEN();
         this.fetchMoves();
       }
       this.startDrag = -1;
     },
+
     clearBoard() {
       for (let i = 0; i < 64; i ++) {
         this.board[i].piece = 0;
       }
     },
+
     loadFEN(FEN:string) {
       // clear the board
       this.clearBoard()
@@ -144,7 +209,7 @@ export default defineComponent({
           return;
         const emptySquares = Number(token);
         if (Number.isNaN(emptySquares)) {
-          this.board[index].piece = this.FENByteToNumber(token);
+          this.board[index].piece = FENByteToNumber(token);
           index++;
           return;
         }
@@ -159,7 +224,23 @@ export default defineComponent({
         this.nextToPlay = 1;
       }
 
+      if (split_string.length < 3)
+        return;
+      this.castling = LoadCastlingFEN(split_string[2]);
+
+      if (split_string.length < 4)
+        return;
+      this.enPassant = ChessNotationToIndex(split_string[3]);
+
+      if (split_string.length < 5)
+        return;
+      this.halfClock = Number(split_string[4]);
+
+      if (split_string.length < 6)
+        return;
+      this.fullClock = Number(split_string[5]);
     }, 
+
     generateFEN() {
       let fen = '';
       let empty = 0;
@@ -168,7 +249,7 @@ export default defineComponent({
           if (empty !== 0) {
             fen += `${empty}`;
           }
-          fen += this.NumberToFENByte(square.piece);
+          fen += NumberToFENByte(square.piece);
           empty = 0;
         } else {
           empty++;
@@ -188,66 +269,21 @@ export default defineComponent({
         fen += ' b';
       }
 
+      // add castling to FEN 
+      fen += ` ${GenerateCastlingFEN(this.castling)}`;
+
+      // add en passant to FEN
+      fen += ` ${IndexToChessNotation(this.enPassant)}`;
+
+      // add half clock
+      fen += ` ${this.halfClock}`;
+
+      // add full clock
+      fen += ` ${this.fullClock}`;
+
       this.currentFEN = fen;
     },
-    FENByteToNumber(token:string) {
-      switch (token) {
-        case 'P':
-          return 1;
-        case 'N':
-          return 2;
-        case 'B':
-          return 3;
-        case 'R':
-          return 4;
-        case 'Q':
-          return 5;
-        case 'K':
-          return 6;
-        case 'p':
-          return 1 + 8;
-        case 'n':
-          return 2 + 8;
-        case 'b':
-          return 3 + 8;
-        case 'r':
-          return 4 + 8;
-        case 'q':
-          return 5 + 8;
-        case 'k':
-          return 6 + 8;
-      }
-      return 0;
-    },
-    NumberToFENByte(piece:number) {
-      switch (piece) {
-        case 1:
-          return 'P';
-        case 2:
-          return 'N';
-        case 3:
-          return 'B';
-        case 4:
-          return 'R';
-        case 5:
-          return 'Q';
-        case 6:
-          return 'K';
-        case 1 + 8:
-          return 'p';
-        case 2 + 8:
-          return 'n';
-        case 3 + 8:
-          return 'b';
-        case 4 + 8:
-          return 'r';
-        case 5 + 8:
-          return 'q';
-        case 6 + 8:
-          return 'k';
-      }
-      return '';
-    },
+
     async fetchMoves() {
       this.moves = []
       try {
