@@ -49,6 +49,15 @@ export default defineComponent({
     element?.addEventListener('dragleave', this.leaveDraggable);
     element?.addEventListener('drop', this.dropDraggable);
 
+    // element?.addEventListener('mousedown', (event:MouseEvent) => {
+    //   // event?.preventDefault();
+    //   console.log(event);
+    //   if (element?.hasChildNodes()) {
+    //     const child = document.getElementById(this.pieceId);
+    //     console.log(child);
+    //     child?.focus();
+    //   }
+    // });
   }, 
   updated() {
     const id = this.id || 0;

@@ -14,11 +14,11 @@
         clear board
       </button>
       <span class="text-xs">
-        FEN = {{ FENinput }}
+        FEN = {{ currentFEN }}
       </span>
       <form>
       <input v-model="FENinput" class="text-xs w-64">
-      <button @click="(event) => {event.preventDefault(); loadFEN(FENinput)}" class="w-auto h-auto bg-emerald-200 rounded-lg p-1">
+      <button @click="(event) => {event.preventDefault(); loadFEN(FENinput); generateFEN(); fetchMoves();}" class="w-auto h-auto bg-emerald-200 rounded-lg p-1">
         load FEN
       </button>
       </form>
@@ -70,9 +70,10 @@ export default defineComponent({
       board: board,
       startDrag: -1,
       endDrag: -1,
-      FENinput: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR',
+      FENinput: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       currentFEN: '',
       moves: [],
+      nextToPlay: 0,
     }
   }, 
   updated() {
@@ -119,6 +120,9 @@ export default defineComponent({
         this.board[this.endDrag].piece = this.board[this.startDrag].piece;
         this.board[this.startDrag].piece = 0;
         // console.log(this.board);
+        this.nextToPlay = this.nextToPlay ^ 1;
+        this.generateFEN();
+        this.fetchMoves();
       }
       this.startDrag = -1;
     },
@@ -146,7 +150,46 @@ export default defineComponent({
         }
         index += emptySquares;
       });
+
+      if (split_string.length < 2)
+        return;
+      if (split_string[1] === 'w') {
+        this.nextToPlay = 0;
+      } else {
+        this.nextToPlay = 1;
+      }
+
     }, 
+    generateFEN() {
+      let fen = '';
+      let empty = 0;
+      this.board.forEach((square) => {
+        if (square.piece !==0) {
+          if (empty !== 0) {
+            fen += `${empty}`;
+          }
+          fen += this.NumberToFENByte(square.piece);
+          empty = 0;
+        } else {
+          empty++;
+        }
+        if (square.id % 8 === 7 && square.id !== 63) {
+          if (empty !== 0) {
+            fen += `${empty}`;
+          }
+          fen += '/';
+          empty = 0;
+        }
+      })
+
+      if (this.nextToPlay === 0) {
+        fen += ' w';
+      } else {
+        fen += ' b';
+      }
+
+      this.currentFEN = fen;
+    },
     FENByteToNumber(token:string) {
       switch (token) {
         case 'P':
@@ -212,7 +255,7 @@ export default defineComponent({
           "http://localhost:12345/FEN", {
             method: "POST", // *GET, POST, PUT, DELETE, etc.
             mode: "cors", // no-cors, *cors, same-origin
-            body: this.FENinput, // body data type must match "Content-Type" header
+            body: this.currentFEN, // body data type must match "Content-Type" header
           }
         );
         const json = await res.json();
