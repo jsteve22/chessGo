@@ -1,6 +1,6 @@
 <template>
   <div :id="squareId" :class="squareStyling" >
-    <img v-if="pieceType!==0" :id="pieceId" :src="getImagePath(pieceType)" class="active:cursor-grabbing" draggable="true" />
+    <img v-if="pieceType!==0" :id="pieceId" :src="getImagePath(pieceType)" class="w-3/4 active:cursor-grabbing" draggable="true" />
     <div v-if="placable && pieceType===0" class="w-1 h-1 bg-white">
     </div>
     <!--
