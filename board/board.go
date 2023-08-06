@@ -327,3 +327,89 @@ func ChessNotationToBoardIndex(notation string) (uint8, error) {
 
 	return index, nil
 }
+
+func GenerateFEN(game Game) string {
+	fen := ""
+
+	emptySquare := uint8(0)
+	blanks := 0
+
+	for index, square := range game.board {
+		if (square != emptySquare) {
+			if (blanks > 0) {
+				fen += string( rune(int('0')+blanks) )
+			}
+			blanks = 0
+			fen += PieceRepresentation(square)
+		} else {
+			blanks += 1
+		}
+
+		if (index % 8 == 7) {
+			if (blanks > 0) {
+				fen += string( rune(int('0')+blanks) )
+			}
+			blanks = 0
+			if (index != 63) {
+				fen += "/"
+			}
+		}
+	}
+
+	WHITE := uint8(0)
+
+	// print next to play
+	if game.nextToPlay == WHITE {
+		fen += " w"
+	} else {
+		fen += " b"
+	}
+
+	// generate the castling rights
+	castling := ""
+	for index, castle := range game.castlingRights {
+		if (castle) {
+			switch (index) {
+			case 0:
+				castling += "K"
+				break
+			case 1:
+				castling += "Q"
+				break
+			case 2:
+				castling += "k"
+				break
+			case 3:
+				castling += "q"
+				break
+			}
+		}
+	}
+
+	if (castling == "") {
+		fen += " -"
+	} else {
+		fen += " "
+		fen += castling
+	}
+
+	if (game.enPassant == -1) {
+		fen += " -"
+	} else {
+		fen += " "
+		enpas, _ := BoardIndexToChessNotation(uint8(game.enPassant))
+		fen += enpas
+	}
+
+	clock := fmt.Sprintf(" %d", game.halfMoveClock)
+	fen += clock
+
+	clock = fmt.Sprintf(" %d", game.fullMoveClock)
+	fen += clock
+
+	return fen
+}
+
+func NextToPlay(game Game) uint8 {
+	return game.nextToPlay
+}
