@@ -21,7 +21,7 @@ func PrintBoard(game Game) {
 	fmt.Printf("\n|")
 	for ind := 0; ind < 64; ind++ {
 		pieceRep := PieceRepresentation(game.board[ind])
-		fmt.Printf(" %s |", pieceRep)
+		fmt.Printf("  %s |", pieceRep)
 		if ind%8 == 7 && ind != 63 {
 			fmt.Printf("\n")
 			for jnd := 0; jnd < 7; jnd++ {
@@ -40,29 +40,29 @@ func PrintBoard(game Game) {
 func PieceRepresentation(piece uint8) string {
 	switch piece {
 	case 1:
-		return "WP"
+		return "P"
 	case 2:
-		return "WN"
+		return "N"
 	case 3:
-		return "WB"
+		return "B"
 	case 4:
-		return "WR"
+		return "R"
 	case 5:
-		return "WQ"
+		return "Q"
 	case 6:
-		return "WK"
+		return "K"
 	case 9:
-		return "BP"
+		return "p"
 	case 10:
-		return "BN"
+		return "n"
 	case 11:
-		return "BB"
+		return "b"
 	case 12:
-		return "BR"
+		return "r"
 	case 13:
-		return "BQ"
+		return "q"
 	case 14:
-		return "BK"
+		return "k"
 	}
 	return "  "
 }
@@ -126,7 +126,7 @@ func PrintColorPieces(game Game) {
 	for _, square := range game.board {
 		if (square != emptySquare) && (square>>3)==WHITE {
 			pieceRep := PieceRepresentation(square)
-			fmt.Printf("%s ", pieceRep )
+			fmt.Printf(" %s ", pieceRep )
 		}
 	}
 	fmt.Printf("\n")
@@ -144,7 +144,7 @@ func PrintColorPieces(game Game) {
 	for _, square := range game.board {
 		if (square != emptySquare) && (square>>3)==BLACK {
 			pieceRep := PieceRepresentation(square)
-			fmt.Printf("%s ", pieceRep )
+			fmt.Printf(" %s ", pieceRep )
 		}
 	}
 	fmt.Printf("\n")

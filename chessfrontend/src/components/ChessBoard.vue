@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div>
+    <!-- <div>
       drag started in {{ startDrag }}
       drag ended in {{ endDrag }}
       <div v-if="inPromotion">
@@ -9,9 +9,9 @@
         <button type="button" @click="board[endDrag].piece = 4" class="w-16 h-4 bg-emerald-600 hover:border-2 hover:border-orange-500">rook</button>
         <button type="button" @click="board[endDrag].piece = 5" class="w-16 h-4 bg-emerald-600 hover:border-2 hover:border-orange-500">queen</button>
       </div>
-      <!-- <button @click="fetchMoves" class="w-auto h-auto bg-emerald-200 rounded-lg p-1">
+      <button @click="fetchMoves" class="w-auto h-auto bg-emerald-200 rounded-lg p-1">
         fetch Moves
-      </button> -->
+      </button>
       <button type="button" @click="() => {const p:number[] = []; board.forEach((square) => p.push(square.piece)); console.log(p);}" class="w-auto h-auto bg-blue-50 rounded-lg p-1">
         print board
       </button>
@@ -27,6 +27,13 @@
         load FEN
       </button>
       </form>
+    </div> -->
+    <button @click="(event) => {event.preventDefault(); loadFEN(FENinput); generateFEN(); fetchMoves();}" class="w-auto h-auto bg-emerald-200 rounded-lg p-1">
+      start new board
+    </button>
+    <div>
+      half move = {{ halfClock }} | full move = {{ fullClock }} | game state = {{ (playing) ? "active" : "not active" }} 
+      <span v-if="playing===false">| result = {{ (winner === -1) ? "DRAW" : (winner === 0) ? "WHITE WINS" : "BLACK WINS" }}</span>
     </div>
     <div class="grid grid-cols-8" id="ChessBoardGrid">
       <div v-for="square in board" v-bind:key="square.id">
@@ -49,8 +56,14 @@ export default defineComponent({
     chessboardSquare
   },
   mounted() {
+    interface Squares {
+      color: number,
+      id: number,
+      piece: number,
+      placable: boolean
+    }
     const size = 8*8;
-    const elements = [];
+    const elements:(Squares)[] = [];
     const light = 0;
     const dark = 1;
     for (let i = 0; i < size; i++) {
@@ -85,6 +98,8 @@ export default defineComponent({
       halfClock: 0,
       fullClock: 0,
       inPromotion: true,
+      playing: false,
+      winner: -1,
     }
   }, 
   updated() {
@@ -149,6 +164,16 @@ export default defineComponent({
           this.castling[2*PIECE_COLOR + 1] = false;
         }
 
+        // check if a piece is captured
+        if (this.board[this.endDrag].piece !== 0) {
+          this.halfClock = -1;
+        }
+
+        // check a pawn is moved
+        if (PIECE === PAWN) {
+          this.halfClock = -1;
+        }
+
         // a move is made
         this.board[this.endDrag].piece = this.board[this.startDrag].piece;
         this.board[this.startDrag].piece = 0;
@@ -183,6 +208,12 @@ export default defineComponent({
           this.inPromotion = true;
           this.board[this.endDrag].piece = 5 + (8*PIECE_COLOR);
         }
+
+        // increment full move clock
+        this.fullClock += 1;
+
+        // increment the half move clock
+        this.halfClock += 1;
 
         this.generateFEN();
         this.fetchMoves();
@@ -295,7 +326,14 @@ export default defineComponent({
           }
         );
         const json = await res.json();
+        console.log(json);
         this.moves = JSON.parse(JSON.stringify(json.Data));
+        this.playing = json.Playing;
+        this.winner = json.Winner;
+        const fen = json.FEN;
+        if (fen !== "") {
+          this.loadFEN(fen)
+        }
       } catch (error) {
         console.log(error);
       }

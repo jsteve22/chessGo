@@ -1,5 +1,10 @@
 package board
 
+import (
+	"math/rand"
+	"time"
+)
+
 func GenerateMoves(game Game) []Move {
 	// var moves []Move
 	// var pseudoMoves []Move
@@ -117,6 +122,11 @@ func MakeMove(game Game, move Move) Game {
 	PAWN := uint8(1)
 	KING := uint8(6)
 	ROOK := uint8(4)
+	emptySquare := uint8(0)
+
+	// update clocks
+	game.fullMoveClock += 1
+	game.halfMoveClock += 1
 
 	if PIECE == PAWN && move.end == uint8(game.enPassant) {
 		deleteRank := endRank - 1 + ((COLOR ^ XOR) * 2)
@@ -150,6 +160,11 @@ func MakeMove(game Game, move Move) Game {
 	if PIECE == KING && startFile == 4 {
 		game.castlingRights[COLOR*2+0] = false
 		game.castlingRights[COLOR*2+1] = false
+	}
+
+	// update half move clock if piece is taken or a pawn is moved
+	if PIECE == PAWN || game.board[move.end] != emptySquare {
+		game.halfMoveClock = 0
 	}
 
 	// update board
@@ -207,6 +222,30 @@ func IsKingInCheck(game Game) bool {
 	}
 
 	return (bitboardAttacks & (kingBitBoard)) != 0
+}
+
+func GetWinner(game Game) int8 {
+	// only call this function if there are no moves to make
+	if !IsKingInCheck(game) {
+		return -1
+	}
+
+	XOR := uint8(1)
+
+	return int8(game.nextToPlay ^ XOR)
+}
+
+func ComputerMakeMove(game Game) Game {
+	moves := GenerateMoves(game)
+
+	source := rand.NewSource(time.Now().UnixNano())
+	generator := rand.New(source)
+
+	index := generator.Intn(len(moves))
+
+	game = MakeMove(game, moves[index])
+
+	return game
 }
 
 /*
